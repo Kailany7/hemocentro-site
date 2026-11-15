@@ -6,7 +6,7 @@ export function Hero() {
     <section id="inicio" className="relative overflow-hidden">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-20 pt-16 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:pb-28 lg:pt-24">
         {/* Coluna da esquerda: textos e botões */}
-        <div className="relative z-10 max-w-2xl">
+        <div className="hero-intro relative z-10 max-w-2xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-success-soft px-3.5 py-2 text-xs font-bold text-success">
             <span className="size-2 rounded-full bg-success" /> Estoque atualizado hoje, às 8h
           </div>
@@ -39,10 +39,10 @@ export function Hero() {
           </div>
         </div>
 
-        {/* Coluna da direita: cartão azul */}
-        <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+        {/* Coluna da direita: cartão de impacto */}
+        <div className="hero-visual relative mx-auto w-full max-w-md lg:max-w-none">
           <div className="absolute -inset-5 rounded-[2.5rem] bg-primary-soft/70 blur-2xl" />
-          <div className="relative overflow-hidden rounded-[2rem] bg-primary shadow-brand">
+          <div className="hero-card relative overflow-hidden rounded-[2rem] shadow-brand">
             <div
               className="absolute inset-0 opacity-20"
               style={{
@@ -57,13 +57,31 @@ export function Hero() {
                 </span>
                 <HeartPulse className="text-primary-foreground/70" />
               </div>
-              <div>
-                <div className="mb-5 flex size-28 items-center justify-center rounded-full bg-primary-foreground/10 ring-1 ring-primary-foreground/25 sm:size-36">
-                  <Droplets className="size-14 text-primary-foreground sm:size-20" />
+              <div className="w-full">
+                <div className="mb-3 flex size-20 items-center justify-center rounded-full bg-primary-foreground/10 ring-1 ring-primary-foreground/25 sm:size-24">
+                  <Droplets className="size-10 text-primary-foreground sm:size-12" />
                 </div>
-                <p className="max-w-xs text-3xl font-bold leading-tight tracking-tight text-primary-foreground sm:text-4xl">
-                  Uma doação pode ajudar até três pessoas.
-                </p>
+                <div className="mx-auto w-full max-w-sm text-center">
+                  <svg
+                    aria-hidden="true"
+                    className="hero-heartbeat mb-3 w-full"
+                    viewBox="0 0 500 100"
+                    fill="none"
+                  >
+                    <path
+                      d="M0 50H160L184 50L202 30L222 70L248 9L275 91L295 50H500"
+                      className="hero-heartbeat-track"
+                    />
+                    <path
+                      d="M0 50H160L184 50L202 30L222 70L248 9L275 91L295 50H500"
+                      className="hero-heartbeat-line"
+                      pathLength="100"
+                    />
+                  </svg>
+                  <p className="mx-auto max-w-[22rem] text-[1.75rem] font-bold leading-tight tracking-tight text-primary-foreground sm:text-[2rem]">
+                    Uma doação pode ajudar até três pessoas.
+                  </p>
+                </div>
               </div>
               <div className="flex items-center justify-between border-t border-primary-foreground/20 pt-5 text-sm text-primary-foreground/75">
                 <span>HemoHelp</span>

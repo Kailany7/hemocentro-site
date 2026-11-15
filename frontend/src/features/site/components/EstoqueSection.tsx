@@ -1,19 +1,7 @@
-// Dados de exemplo. Depois podem vir da API de estoque.
-const ESTOQUE = [
-  { tipo: "A+", nivel: "Estável", valor: 76, tom: "estavel" },
-  { tipo: "A-", nivel: "Baixo", valor: 39, tom: "baixo" },
-  { tipo: "B+", nivel: "Estável", valor: 68, tom: "estavel" },
-  { tipo: "B-", nivel: "Crítico", valor: 18, tom: "critico" },
-  { tipo: "AB+", nivel: "Estável", valor: 82, tom: "estavel" },
-  { tipo: "AB-", nivel: "Baixo", valor: 32, tom: "baixo" },
-  { tipo: "O+", nivel: "Baixo", valor: 44, tom: "baixo" },
-  { tipo: "O-", nivel: "Crítico", valor: 13, tom: "critico" },
-] as const;
-
-type Tom = (typeof ESTOQUE)[number]["tom"];
+import type { StockItem, StockTone } from "../types/public-data";
 
 // Classes de cor para cada nível do estoque
-const CORES: Record<Tom, { ponto: string; barra: string; selo: string }> = {
+const CORES: Record<StockTone, { ponto: string; barra: string; selo: string }> = {
   estavel: {
     ponto: "bg-success",
     barra: "bg-success",
@@ -31,7 +19,12 @@ const CORES: Record<Tom, { ponto: string; barra: string; selo: string }> = {
   },
 };
 
-export function EstoqueSection() {
+interface EstoqueSectionProps {
+  items: StockItem[];
+  loading: boolean;
+}
+
+export function EstoqueSection({ items, loading }: EstoqueSectionProps) {
   return (
     <section id="estoque" className="bg-card py-20">
       <div className="mx-auto max-w-7xl px-5 lg:px-8">
@@ -44,19 +37,22 @@ export function EstoqueSection() {
               Como está o estoque?
             </h2>
           </div>
-          <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
-            Acompanhe os níveis e ajude a manter todos os tipos disponíveis.
-          </p>
+          <div className="max-w-xs rounded-2xl border border-primary/20 bg-primary-soft px-4 py-3 shadow-brand">
+            <p className="text-xs font-semibold leading-relaxed text-foreground">
+              Estes são os níveis públicos do estoque de sangue. Acompanhe a disponibilidade e
+              ajude a manter todos os tipos abastecidos.
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-          {ESTOQUE.map((item) => {
+          {items.map((item) => {
             const cores = CORES[item.tom];
 
             return (
               <div
-                key={item.tipo}
-                className="rounded-2xl border border-border bg-background p-4 shadow-panel transition-transform hover:-translate-y-1"
+                key={item.id}
+                className="group relative rounded-2xl border-2 border-primary/50 bg-background p-4 shadow-panel transition-all hover:-translate-y-1 hover:border-primary/75"
               >
                 <div className="flex items-start justify-between">
                   <span className="text-2xl font-extrabold">{item.tipo}</span>
@@ -75,10 +71,27 @@ export function EstoqueSection() {
                     {item.nivel}
                   </span>
                 </div>
+
+                <span
+                  role="tooltip"
+                  className="pointer-events-none absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-foreground px-3 py-2 text-xs font-bold text-background opacity-0 shadow-panel transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+                >
+                  {item.tipo} em {item.valor}%
+                </span>
               </div>
             );
           })}
         </div>
+        {!loading && items.length === 0 && (
+          <p className="rounded-2xl border border-border bg-background p-6 text-center text-sm text-muted-foreground">
+            Nenhuma informação de estoque foi cadastrada ainda.
+          </p>
+        )}
+        {loading && (
+          <p className="text-sm text-muted-foreground" role="status">
+            Carregando estoque...
+          </p>
+        )}
       </div>
     </section>
   );

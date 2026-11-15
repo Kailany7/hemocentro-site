@@ -1,10 +1,18 @@
 import { MongoClient } from "mongodb";
 import { env } from "../config/env.js";
-import { recursos } from "../config/resources.js";
-import { relacionamentos } from "../config/relationships.js";
 
 const client = new MongoClient(env.mongoUri, { serverSelectionTimeoutMS: 10000 });
 let databasePromise;
+
+// Colecoes usadas pela area do doador e pelos dados publicos da landing page.
+const colecoes = Object.freeze([
+  "DoadoresCCadastro",
+  "EstoqueSangue",
+  "Campanhas",
+  "LocaisColeta",
+  "UnidadesMoveis",
+  "GeocodingCache",
+]);
 
 async function garantirColecoes(database) {
   const colecoesExistentes = new Set(
@@ -14,9 +22,7 @@ async function garantirColecoes(database) {
   );
 
   await Promise.all(
-    recursos
-      .map(({ colecao }) => colecao)
-      .filter((nome, indice, nomes) => nomes.indexOf(nome) === indice)
+    colecoes
       .filter((nome) => !colecoesExistentes.has(nome))
       .map(async (nome) => {
         try {
@@ -26,14 +32,6 @@ async function garantirColecoes(database) {
           if (error.code !== 48) throw error;
         }
       }),
-  );
-}
-
-async function garantirIndicesRelacionamentos(database) {
-  await Promise.all(
-    relacionamentos.map(({ colecao, campo }) =>
-      database.collection(colecao).createIndex({ [campo]: 1 }),
-    ),
   );
 }
 
@@ -66,7 +64,6 @@ export async function conectarBanco() {
       .then(() => client.db(env.mongoDatabase))
       .then(async (database) => {
         await garantirColecoes(database);
-        await garantirIndicesRelacionamentos(database);
         await garantirIndicesUnicos(database);
         return database;
       });
