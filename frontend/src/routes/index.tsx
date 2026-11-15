@@ -7,6 +7,7 @@ import { LocaisSection } from "@/features/site/components/LocaisSection";
 import { CriteriosSection } from "@/features/site/components/CriteriosSection";
 import { SobreSection } from "@/features/site/components/SobreSection";
 import { Footer } from "@/features/site/components/Footer";
+import { usePublicData } from "@/features/site/hooks/use-public-data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -18,18 +19,24 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  component: () => (
+  component: PaginaInicial,
+});
+
+function PaginaInicial() {
+  const { estoque, campanhas, locais, loading } = usePublicData();
+
+  return (
     <div className="landing flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1">
         <Hero />
-        <EstoqueSection />
-        <CampanhasSection />
-        <LocaisSection />
+        <EstoqueSection items={estoque} loading={loading} />
+        <CampanhasSection campaigns={campanhas} locations={locais} loading={loading} />
+        <LocaisSection campaigns={campanhas} locations={locais} loading={loading} />
         <CriteriosSection />
         <SobreSection />
       </main>
       <Footer />
     </div>
-  ),
-});
+  );
+}

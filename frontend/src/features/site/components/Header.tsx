@@ -44,13 +44,6 @@ export function Header() {
             </Link>
           </Button>
           <Button
-            asChild
-            variant="outline"
-            className="hidden rounded-full border-border bg-card px-5 md:flex"
-          >
-            <Link to="/gestao/login">Acesso hemocentro</Link>
-          </Button>
-          <Button
             variant="ghost"
             size="icon"
             className="lg:hidden"
@@ -74,11 +67,6 @@ export function Header() {
             <Button asChild className="rounded-full">
               <Link to="/doador" onClick={() => setOpen(false)}>
                 Área do doador
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="rounded-full border-border bg-card">
-              <Link to="/gestao/login" onClick={() => setOpen(false)}>
-                Acesso hemocentro
               </Link>
             </Button>
           </div>

@@ -1,23 +1,7 @@
-import { recursos } from "../config/resources.js";
 import { conectarBanco } from "../database/mongodb.js";
-import { lerBody, responder } from "../http/http.js";
-import {
-  atualizarRecurso,
-  buscarRecurso,
-  criarRecurso,
-  excluirRecurso,
-  idValido,
-  listarRecurso,
-  validarDados,
-  validarRelacionamentos,
-} from "../repositories/resource-repository.js";
+import { responder } from "../http/http.js";
 import { rotearDoador } from "./doador-router.js";
-
-function localizarRecurso(pathname) {
-  return recursos.find(
-    (recurso) => pathname === recurso.caminho || pathname.startsWith(`${recurso.caminho}/`),
-  );
-}
+import { CAMINHOS_DADOS_PUBLICOS, rotearDadosPublicos } from "./public-data-router.js";
 
 export async function rotearApi(request, response) {
   if (request.method === "OPTIONS") {
@@ -32,72 +16,17 @@ export async function rotearApi(request, response) {
     return;
   }
 
-  // Autenticacao do doador (UC06), antes do CRUD generico de /api/doadores.
+  // Autenticacao e area do doador (UC06).
   if (url.pathname === "/api/doador" || url.pathname.startsWith("/api/doador/")) {
     await rotearDoador(request, response, url);
     return;
   }
 
-  const recurso = localizarRecurso(url.pathname);
-  if (!recurso) {
-    responder(response, 404, { erro: "Caminho da API nao encontrado." });
+  // Dados publicos da landing page (estoque, campanhas e locais).
+  if (CAMINHOS_DADOS_PUBLICOS.includes(url.pathname.replace(/\/+$/, ""))) {
+    await rotearDadosPublicos(request, response, url);
     return;
   }
 
-  const id = decodeURIComponent(url.pathname.slice(recurso.caminho.length + 1));
-  if (id.includes("/")) {
-    responder(response, 404, { erro: "Caminho da API nao encontrado." });
-    return;
-  }
-
-  if (request.method === "GET" && !id) {
-    responder(response, 200, await listarRecurso(recurso));
-    return;
-  }
-
-  if (request.method === "GET" && id) {
-    const registro = await buscarRecurso(recurso, id);
-    responder(response, registro ? 200 : 404, registro ?? { erro: "Registro nao encontrado." });
-    return;
-  }
-
-  if (request.method === "DELETE" && id) {
-    const excluido = await excluirRecurso(recurso, id);
-    responder(
-      response,
-      excluido ? 200 : 404,
-      excluido ? { mensagem: "Registro excluido." } : { erro: "Registro nao encontrado." },
-    );
-    return;
-  }
-
-  const body = await lerBody(request);
-  const erroValidacao = validarDados(body, recurso.camposObrigatorios);
-  if (erroValidacao) {
-    responder(response, 400, { erro: erroValidacao });
-    return;
-  }
-
-  const erroRelacionamento = await validarRelacionamentos(recurso, body);
-  if (erroRelacionamento) {
-    responder(response, 400, { erro: erroRelacionamento });
-    return;
-  }
-
-  if (request.method === "POST" && !id) {
-    responder(response, 201, await criarRecurso(recurso, body));
-    return;
-  }
-
-  if ((request.method === "PUT" || request.method === "PATCH") && id) {
-    if (!idValido(id)) {
-      responder(response, 400, { erro: "ID do registro invalido." });
-      return;
-    }
-    const registro = await atualizarRecurso(recurso, id, body);
-    responder(response, registro ? 200 : 404, registro ?? { erro: "Registro nao encontrado." });
-    return;
-  }
-
-  responder(response, 405, { erro: "Metodo nao permitido." });
+  responder(response, 404, { erro: "Caminho da API nao encontrado." });
 }

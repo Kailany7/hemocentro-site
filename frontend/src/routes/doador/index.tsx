@@ -3,7 +3,8 @@ import { useDoadorAuth } from "@/features/auth/use-doador-auth";
 import { CampanhasAtivas } from "@/features/doador/components/campanhas-ativas";
 import { LocaisColeta } from "@/features/doador/components/locais-coleta";
 import { ProximaDoacao } from "@/features/doador/components/proxima-doacao";
-import { campanhasAtivas, doadorComDadosReais, locaisColeta } from "@/features/doador/data/exemplo";
+import { doadorComDadosReais } from "@/features/doador/data/exemplo";
+import { usePublicData } from "@/features/site/hooks/use-public-data";
 
 export const Route = createFileRoute("/doador/")({
   head: () => ({
@@ -19,6 +20,8 @@ function AreaDoador() {
   const { doador } = useDoadorAuth();
   const dadosDoador = doadorComDadosReais(doador);
   const primeiroNome = dadosDoador.nome.split(" ")[0] ?? dadosDoador.nome;
+  // Mesmas rotas publicas da landing, mas sem os dados fixos de exemplo.
+  const { campanhas, locais, loading, erros } = usePublicData({ usarDadosFixos: false });
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-10 lg:py-14">
@@ -36,8 +39,8 @@ function AreaDoador() {
       <ProximaDoacao doador={dadosDoador} />
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <CampanhasAtivas campanhas={campanhasAtivas} />
-        <LocaisColeta locais={locaisColeta} />
+        <CampanhasAtivas campanhas={campanhas} loading={loading} erro={erros.campanhas} />
+        <LocaisColeta locais={locais} loading={loading} erro={erros.locais} />
       </div>
     </div>
   );
