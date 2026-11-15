@@ -127,7 +127,7 @@ copy .env.example .env    # Windows (Prompt de Comando)
 | -------------- | ----------------------------------------------------------------------------------------------------------- |
 | `MONGODB_URI`  | String de conexão do MongoDB. É o endereço do cluster/instância, com usuário e senha.                       |
 | `MONGODB_DB`   | Nome do banco usado pela aplicação. Deve ser **`HemoHelp`**, o mesmo usado pelo painel de gestão.            |
-| `PORT`         | Porta em que a API do backend escuta. O backend usa `3001` quando a variável não é definida.                 |
+| `PORT`         | Porta em que a API do backend escuta. O backend usa `3002` quando a variável não é definida.                 |
 | `VITE_API_URL` | URL base da API consumida pelo frontend, **incluindo o `/api`** (o frontend concatena `/estoques`, `/doador/login` etc.). |
 | `JWT_SECRET`   | Segredo usado para assinar e validar o token do doador. Sem ele, login, perfil e troca de senha falham.     |
 
@@ -145,9 +145,9 @@ npm install
 node backend/server.js
 ```
 
-O equivalente é `npm run dev:backend`. A API sobe em `http://localhost:${PORT}` e, ao iniciar,
-conecta ao MongoDB para garantir as coleções e os índices únicos de `email` e `cpf` em
-`DoadoresCCadastro`.
+O equivalente é `npm run dev:backend`. A API sobe em `http://localhost:${PORT}` (com o
+`.env.example`, `http://localhost:3002`) e, ao iniciar, conecta ao MongoDB para garantir as coleções
+e os índices únicos de `email` e `cpf` em `DoadoresCCadastro`.
 
 ### 4.5 Subir o site (terminal 2)
 
@@ -155,7 +155,9 @@ conecta ao MongoDB para garantir as coleções e os índices únicos de `email` 
 npm run dev
 ```
 
-O Vite sobe o frontend (com SSR) e passa a consumir a API definida em `VITE_API_URL`.
+O Vite sobe o frontend (com SSR) em `http://localhost:5174` e passa a consumir a API definida em
+`VITE_API_URL`. A porta 5174 está fixada em `vite.config.ts` (`server.port`) para não disputar a
+5173 com o painel `HemoHelpSistema`.
 
 ### 4.6 Outros comandos
 

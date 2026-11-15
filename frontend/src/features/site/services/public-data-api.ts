@@ -1,6 +1,6 @@
 import type { Campaign, CollectionLocation, StockItem } from "../types/public-data";
 
-const apiBaseUrl = (import.meta.env["VITE_API_URL"] ?? "http://localhost:3001/api").replace(
+const apiBaseUrl = (import.meta.env["VITE_API_URL"] ?? "http://localhost:3002/api").replace(
   /\/$/,
   "",
 );

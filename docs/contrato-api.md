@@ -9,7 +9,7 @@ O painel `/gestao` **não faz parte deste repositório** e não é documentado a
 
 ## Convenções
 
-- **Base:** `http://localhost:${PORT}` (o `PORT` vem do `.env`; o valor padrão do backend é `3001`).
+- **Base:** `http://localhost:${PORT}` (o `PORT` vem do `.env`; o valor padrão do backend é `3002`).
 - **Formato:** JSON, com `Content-Type: application/json; charset=utf-8` nas respostas.
 - **CORS:** todas as respostas enviam `Access-Control-Allow-Origin: *`, e requisições `OPTIONS`
   recebem `204` sem corpo.
@@ -445,35 +445,35 @@ Erros:
 
 ```bash
 # 1. Health check
-curl http://localhost:3001/api/health
+curl http://localhost:3002/api/health
 
 # 2. Dados públicos da landing
-curl http://localhost:3001/api/estoques
-curl http://localhost:3001/api/campanhas
-curl http://localhost:3001/api/locais
+curl http://localhost:3002/api/estoques
+curl http://localhost:3002/api/campanhas
+curl http://localhost:3002/api/locais
 
 # 3. Cadastro
-curl -X POST http://localhost:3001/api/doador/cadastro \
+curl -X POST http://localhost:3002/api/doador/cadastro \
   -H "Content-Type: application/json" \
   -d '{"nome":"Marina Alves","email":"marina.alves@email.com","tipoSanguineo":"O-","senha":"segredo123","cpf":"12345678900"}'
 
 # 4. Login (guarde o token da resposta)
-curl -X POST http://localhost:3001/api/doador/login \
+curl -X POST http://localhost:3002/api/doador/login \
   -H "Content-Type: application/json" \
   -d '{"email":"marina.alves@email.com","senha":"segredo123"}'
 
 # 5. Perfil
-curl http://localhost:3001/api/doador/perfil \
+curl http://localhost:3002/api/doador/perfil \
   -H "Authorization: Bearer COLE_O_TOKEN_AQUI"
 
 # 6. Atualizar perfil
-curl -X PATCH http://localhost:3001/api/doador/perfil \
+curl -X PATCH http://localhost:3002/api/doador/perfil \
   -H "Authorization: Bearer COLE_O_TOKEN_AQUI" \
   -H "Content-Type: application/json" \
   -d '{"telefone":"(83) 98888-1111"}'
 
 # 7. Trocar senha
-curl -X PATCH http://localhost:3001/api/doador/senha \
+curl -X PATCH http://localhost:3002/api/doador/senha \
   -H "Authorization: Bearer COLE_O_TOKEN_AQUI" \
   -H "Content-Type: application/json" \
   -d '{"senhaAtual":"segredo123","novaSenha":"novaSenha456"}'

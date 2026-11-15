@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 $projectRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$frontendPort = 5173
-$backendPort = 3001
+$frontendPort = 5174
+$backendPort = 3002
 
 function Test-PortaAberta([int]$Porta) {
   $cliente = [System.Net.Sockets.TcpClient]::new()

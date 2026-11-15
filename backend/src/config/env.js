@@ -9,7 +9,7 @@ if (!mongoUri) {
 export const env = Object.freeze({
   mongoUri,
   mongoDatabase: process.env.MONGODB_DB ?? "hemohelp",
-  port: Number(process.env.PORT ?? 3001),
+  port: Number(process.env.PORT ?? 3002),
   // O segredo do JWT e conferido apenas nas rotas de autenticacao,
   // para a API continuar subindo mesmo sem a variavel definida.
   jwtSecret: process.env.JWT_SECRET ?? "",

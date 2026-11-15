@@ -1,7 +1,7 @@
 // Autenticação do doador: cadastro, login, perfil e controle do token no localStorage.
 const CHAVE_TOKEN = "hemohelp_doador_token";
 
-const apiBaseUrl = (import.meta.env["VITE_API_URL"] ?? "http://localhost:3001/api").replace(
+const apiBaseUrl = (import.meta.env["VITE_API_URL"] ?? "http://localhost:3002/api").replace(
   /\/$/,
   "",
 );
