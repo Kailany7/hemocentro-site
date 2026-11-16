@@ -102,7 +102,13 @@ function periodo(documento) {
 }
 
 function faixaDeHorario(documento) {
-  const explicito = texto(documento, "horario", "horário");
+  const explicito = texto(
+    documento,
+    "horario",
+    "horário",
+    "horarioFuncionamento",
+    "horarioAtendimento",
+  );
   if (explicito) return explicito;
 
   const inicio = texto(documento, "horarioInicio", "horaInicio");
@@ -241,7 +247,7 @@ export async function obterLocais() {
         endereco: movel
           ? enderecoDaUnidadeMovel(documento)
           : texto(documento, "endereco", "endereço", "logradouro"),
-        horario: texto(documento, "horario", "horário", "horarioFuncionamento"),
+        horario: faixaDeHorario(documento),
         tipo: movel ? "movel" : "fixo",
         status: texto(documento, "status", "situacao") || undefined,
         placa: movel ? texto(documento, "placa") || undefined : undefined,

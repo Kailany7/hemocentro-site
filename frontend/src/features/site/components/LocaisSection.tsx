@@ -3,6 +3,7 @@ import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LocationMap } from "./LocationMap";
 import type { Campaign, CollectionLocation } from "../types/public-data";
+import { obterLocaisDasCampanhas } from "../utils/locais-das-campanhas";
 
 function linkDoMapa(endereco: string, cidade = "Campina Grande", estado = "PB") {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
@@ -33,46 +34,7 @@ export function LocaisSection({ campaigns, locations, loading }: LocaisSectionPr
   }
 
   const locaisDasCampanhas = useMemo(
-    () =>
-      campaigns.flatMap((campanha) => {
-        if (!campanha.local?.trim() && !campanha.endereco?.trim()) return [];
-
-        const normalizar = (valor: string) =>
-          valor
-            .trim()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .toLocaleLowerCase("pt-BR");
-        const localDaCampanha = normalizar(campanha.local || campanha.endereco || "");
-        const localEncontrado = locations.find(
-          (local) =>
-            normalizar(local.nome) === localDaCampanha ||
-            normalizar(local.endereco) === localDaCampanha,
-        );
-
-        return [
-          {
-            campanha,
-            endereco: campanha.endereco || localEncontrado?.endereco || campanha.local || "",
-            localDoMapa:
-              localEncontrado ??
-              ({
-                id: `campanha-${campanha.id}`,
-                nome: campanha.titulo,
-                endereco: campanha.endereco || campanha.local || "",
-                horario: campanha.horario || "",
-                tipo: "fixo" as const,
-                cidade: "Campina Grande",
-                estado: "PB",
-                ...(campanha.latitude !== undefined ? { latitude: campanha.latitude } : {}),
-                ...(campanha.longitude !== undefined ? { longitude: campanha.longitude } : {}),
-                ...(campanha.positionApproximate !== undefined
-                  ? { positionApproximate: campanha.positionApproximate }
-                  : {}),
-              } satisfies CollectionLocation),
-          },
-        ];
-      }),
+    () => obterLocaisDasCampanhas(campaigns, locations),
     [campaigns, locations],
   );
 
@@ -120,6 +82,12 @@ export function LocaisSection({ campaigns, locations, loading }: LocaisSectionPr
                   <div>
                     <h3 className="font-bold">{campanha.titulo}</h3>
                     <p className="mt-1 text-sm text-muted-foreground">{endereco}</p>
+                    {(localDoMapa.horario || campanha.horario) && (
+                      <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-success">
+                        <Clock3 className="size-3.5" />
+                        {localDoMapa.horario || campanha.horario}
+                      </p>
+                    )}
                     <span className="mt-3 inline-block text-xs font-bold text-primary">
                       Ver no mapa →
                     </span>
@@ -181,9 +149,9 @@ export function LocaisSection({ campaigns, locations, loading }: LocaisSectionPr
                         Sem posição confirmada no mapa
                       </p>
                     )}
-                    {(local.horario || local.status) && (
+                    {local.horario && (
                       <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-success">
-                        <Clock3 className="size-3.5" /> {local.horario || local.status}
+                        <Clock3 className="size-3.5" /> {local.horario}
                       </p>
                     )}
                     {local.placa && (

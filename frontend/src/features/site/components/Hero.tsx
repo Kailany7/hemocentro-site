@@ -50,14 +50,14 @@ export function Hero() {
                 backgroundSize: "18px 18px",
               }}
             />
-            <div className="relative flex min-h-[390px] flex-col justify-between p-7 sm:min-h-[460px] sm:p-10">
-              <div className="flex items-center justify-between">
+            <div className="relative flex min-h-[430px] flex-col justify-between p-7 sm:min-h-[480px] sm:p-10">
+              <div className="flex shrink-0 items-center justify-between">
                 <span className="rounded-full bg-primary-foreground/15 px-3 py-1.5 text-xs font-bold text-primary-foreground">
                   Doe hoje
                 </span>
                 <HeartPulse className="text-primary-foreground/70" />
               </div>
-              <div className="w-full">
+              <div className="w-full shrink-0">
                 <div className="mb-3 flex size-20 items-center justify-center rounded-full bg-primary-foreground/10 ring-1 ring-primary-foreground/25 sm:size-24">
                   <Droplets className="size-10 text-primary-foreground sm:size-12" />
                 </div>
@@ -83,7 +83,7 @@ export function Hero() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center justify-between border-t border-primary-foreground/20 pt-5 text-sm text-primary-foreground/75">
+              <div className="flex shrink-0 items-center justify-between border-t border-primary-foreground/20 pt-5 text-sm text-primary-foreground/75">
                 <span>HemoHelp</span>
                 <span>Juntos pela vida</span>
               </div>

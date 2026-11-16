@@ -40,7 +40,12 @@ function AreaDoador() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <CampanhasAtivas campanhas={campanhas} loading={loading} erro={erros.campanhas} />
-        <LocaisColeta locais={locais} loading={loading} erro={erros.locais} />
+        <LocaisColeta
+          campanhas={campanhas}
+          locais={locais}
+          loading={loading}
+          erro={erros.locais}
+        />
       </div>
     </div>
   );
