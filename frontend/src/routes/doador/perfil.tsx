@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useDoadorAuth } from "@/features/auth/use-doador-auth";
 import { AlterarSenhaDialog } from "@/features/doador/components/alterar-senha-dialog";
 import { DadosDoador } from "@/features/doador/components/dados-doador";
+import { CarteiraDoador } from "@/features/doador/components/carteira-doador";
 import { EditarDadosDialog } from "@/features/doador/components/editar-dados-dialog";
 
 export const Route = createFileRoute("/doador/perfil")({
@@ -44,6 +45,10 @@ function PerfilDoador() {
             Alterar senha
           </Button>
         </div>
+      </div>
+
+      <div className="mb-8">
+        <CarteiraDoador />
       </div>
 
       {/* A API de perfil não devolve histórico de doações, então não há como exibir uma data. */}

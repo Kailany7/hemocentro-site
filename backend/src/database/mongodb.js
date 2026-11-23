@@ -7,6 +7,7 @@ let databasePromise;
 // Colecoes usadas pela area do doador e pelos dados publicos da landing page.
 const colecoes = Object.freeze([
   "DoadoresCCadastro",
+  "CarteirasUsuarios",
   "EstoqueSangue",
   "Campanhas",
   "LocaisColeta",
@@ -46,6 +47,11 @@ const indicesUnicos = Object.freeze([
     colecao: "DoadoresCCadastro",
     campo: "cpf",
     opcoes: { unique: true, partialFilterExpression: { cpf: { $type: "string" } } },
+  },
+  {
+    colecao: "CarteirasUsuarios",
+    campo: "doadorId",
+    opcoes: { unique: true },
   },
 ]);
 

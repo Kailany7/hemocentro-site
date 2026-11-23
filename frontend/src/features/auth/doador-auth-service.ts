@@ -18,6 +18,15 @@ export type Doador = {
   status?: string;
   createdAt?: string;
   updatedAt?: string;
+  carteira?: {
+    url: string;
+    publicId: string;
+    resourceType?: string;
+    format?: string;
+    version?: number;
+    fileName: string;
+    uploadedAt: string;
+  } | null;
 };
 
 export type DadosCadastro = {
@@ -133,6 +142,30 @@ export function alterarSenhaDoador(dados: DadosSenha) {
     "/doador/senha",
     comToken({ method: "PATCH", body: JSON.stringify(dados) }),
   );
+}
+
+export async function enviarCarteiraDoador(arquivo: File) {
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const resultado = String(reader.result ?? "");
+      resolve(resultado.slice(resultado.indexOf(",") + 1));
+    };
+    reader.onerror = () => reject(new ErroApi("Não foi possível ler o arquivo selecionado.", 0));
+    reader.readAsDataURL(arquivo);
+  });
+
+  return requisicao<Doador>(
+    "/doador/carteira",
+    comToken({
+      method: "POST",
+      body: JSON.stringify({ fileName: arquivo.name, mimeType: arquivo.type, base64 }),
+    }),
+  );
+}
+
+export function excluirCarteiraDoador() {
+  return requisicao<Doador>("/doador/carteira", comToken({ method: "DELETE" }));
 }
 
 export function salvarToken(token: string) {

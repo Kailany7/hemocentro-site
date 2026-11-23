@@ -6,7 +6,7 @@ export function criarServidor() {
   return http.createServer((request, response) => {
     rotearApi(request, response).catch((error) => {
       console.error(error);
-      responder(response, 500, { erro: error.message || "Erro interno do servidor." });
+      responder(response, error.status ?? 500, { erro: error.message || "Erro interno do servidor." });
     });
   });
 }
