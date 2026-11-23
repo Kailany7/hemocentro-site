@@ -16,6 +16,8 @@ export type Doador = {
   cpf?: string;
   telefone?: string;
   status?: string;
+  // Preferência de notificações de campanhas por e-mail (padrão: true).
+  notificacoesEmail?: boolean;
   createdAt?: string;
   updatedAt?: string;
   carteira?: {
@@ -42,6 +44,7 @@ export type DadosPerfil = {
   nome?: string;
   email?: string;
   telefone?: string;
+  notificacoesEmail?: boolean;
 };
 
 export type DadosSenha = {

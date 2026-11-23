@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
+import { Bell, BellOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { atualizarPerfilDoador, type Doador } from "@/features/auth/doador-auth-service";
 import { useDoadorAuth } from "@/features/auth/use-doador-auth";
 import { apenasDigitos, formatarTelefone, telefoneValido } from "@/lib/formatadores";
@@ -20,13 +22,16 @@ type EditarDadosDialogProps = {
   aoFechar: () => void;
 };
 
-// Só nome, e-mail e telefone são editáveis: o PATCH do backend ignora o resto.
+// Só nome, e-mail, telefone e preferência de notificações são editáveis.
 export function EditarDadosDialog({ doador, aoFechar }: EditarDadosDialogProps) {
   const { atualizarDoador } = useDoadorAuth();
   const [nome, setNome] = useState(doador.nome);
   const [email, setEmail] = useState(doador.email);
   const [telefone, setTelefone] = useState(
     doador.telefone ? formatarTelefone(doador.telefone) : "",
+  );
+  const [notificacoesEmail, setNotificacoesEmail] = useState(
+    doador.notificacoesEmail !== false,
   );
   const [salvando, setSalvando] = useState(false);
 
@@ -51,6 +56,7 @@ export function EditarDadosDialog({ doador, aoFechar }: EditarDadosDialogProps) 
         email: email.trim(),
         // Telefone em branco limpa o campo no backend.
         telefone: telefone ? apenasDigitos(telefone) : "",
+        notificacoesEmail,
       });
       atualizarDoador(atualizado);
       toast.success("Dados atualizados.");
@@ -69,8 +75,8 @@ export function EditarDadosDialog({ doador, aoFechar }: EditarDadosDialogProps) 
           <DialogHeader>
             <DialogTitle>Editar dados</DialogTitle>
             <DialogDescription>
-              Você pode alterar seu nome, e-mail e telefone. Os outros dados são confirmados pelo
-              hemocentro.
+              Você pode alterar seu nome, e-mail, telefone e preferências de notificação. Os outros
+              dados são confirmados pelo hemocentro.
             </DialogDescription>
           </DialogHeader>
 
@@ -108,6 +114,29 @@ export function EditarDadosDialog({ doador, aoFechar }: EditarDadosDialogProps) 
                 maxLength={15}
                 value={telefone}
                 onChange={(evento) => setTelefone(formatarTelefone(evento.target.value))}
+              />
+            </div>
+
+            {/* Toggle de notificações por e-mail */}
+            <div className="flex items-center justify-between rounded-xl border border-border bg-secondary/40 px-4 py-3">
+              <div className="flex items-center gap-3">
+                {notificacoesEmail ? (
+                  <Bell className="size-4 text-primary" aria-hidden="true" />
+                ) : (
+                  <BellOff className="size-4 text-muted-foreground" aria-hidden="true" />
+                )}
+                <div>
+                  <p className="text-sm font-medium leading-none">Notificações por e-mail</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Receba alertas sobre novas campanhas de doação
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="perfil-notificacoes"
+                checked={notificacoesEmail}
+                onCheckedChange={setNotificacoesEmail}
+                aria-label="Ativar ou desativar notificações de campanhas por e-mail"
               />
             </div>
           </div>

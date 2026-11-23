@@ -1,5 +1,7 @@
 import {
   BadgeCheck,
+  Bell,
+  BellOff,
   CalendarCheck2,
   ClipboardCheck,
   Droplets,
@@ -25,6 +27,7 @@ type DadosDoadorProps = {
   tipoSanguineo: string;
   tipoSanguineoVerificado: boolean;
   status: string | null;
+  notificacoesEmail?: boolean;
   // A API de perfil ainda não devolve histórico de doações.
   ultimaDoacao: string | null;
   totalDoacoes: number | null;
@@ -65,6 +68,7 @@ export function DadosDoador({
   tipoSanguineo,
   tipoSanguineoVerificado,
   status,
+  notificacoesEmail = true,
   ultimaDoacao,
   totalDoacoes,
 }: DadosDoadorProps) {
@@ -76,10 +80,16 @@ export function DadosDoador({
           <p className="text-sm text-muted-foreground">Você pode editar estas informações.</p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Campo titulo="Nome" valor={nome} icone={UserRound} />
           <Campo titulo="E-mail" valor={email} icone={Mail} />
           <Campo titulo="Telefone" valor={telefone ?? NAO_INFORMADO} icone={Phone} />
+          <Campo
+            titulo="Notificações por e-mail"
+            valor={notificacoesEmail ? "Ativadas" : "Desativadas"}
+            icone={notificacoesEmail ? Bell : BellOff}
+            selo={notificacoesEmail ? undefined : "Silenciado"}
+          />
         </div>
       </section>
 

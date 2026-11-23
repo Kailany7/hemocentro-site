@@ -60,6 +60,7 @@ function PerfilDoador() {
         tipoSanguineo={doador?.tipoSanguineo ?? "A confirmar"}
         tipoSanguineoVerificado={doador?.tipoSanguineoVerificado === true}
         status={doador?.status ?? null}
+        notificacoesEmail={doador?.notificacoesEmail !== false}
         ultimaDoacao={null}
         totalDoacoes={null}
       />

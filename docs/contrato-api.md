@@ -242,6 +242,7 @@ Formato público do doador (usado em cadastro, login e perfil):
 | `cpf`                     | string  | apenas dígitos                                        |
 | `telefone`                | string  | apenas dígitos; ausente quando não informado          |
 | `status`                  | string  | inicia como `Em triagem`                              |
+| `notificacoesEmail`       | boolean | preferências de recebimento de campanhas por e-mail   |
 | `createdAt`               | string  | data ISO                                              |
 | `updatedAt`               | string  | data ISO                                              |
 
@@ -372,7 +373,7 @@ Erros:
 
 ### PATCH `/api/doador/perfil`
 
-Atualiza apenas `nome`, `email` e `telefone`. Qualquer outro campo enviado é ignorado. Exige token.
+Atualiza `nome`, `email`, `telefone` e/ou `notificacoesEmail`. Qualquer outro campo enviado é ignorado. Exige token.
 
 Pedido:
 
@@ -384,13 +385,15 @@ Content-Type: application/json
 {
   "nome": "Marina Alves Souza",
   "email": "marina.souza@email.com",
-  "telefone": "(83) 98888-1111"
+  "telefone": "(83) 98888-1111",
+  "notificacoesEmail": false
 }
 ```
 
 - Todos os campos são opcionais, mas **pelo menos um** precisa ser enviado.
 - `telefone` enviado como `null` ou string vazia **remove** o telefone do cadastro.
 - `nome` vazio é rejeitado.
+- `notificacoesEmail` deve ser booleano (`true` para receber alertas de campanhas, `false` para silenciar).
 
 `200 OK`: devolve o doador já atualizado, no formato público.
 
@@ -398,10 +401,11 @@ Erros:
 
 | Código | Quando                                                    | Corpo                                                          |
 | ------ | --------------------------------------------------------- | -------------------------------------------------------------- |
-| `400`  | nenhum campo enviado                                      | `{ "erro": "Envie ao menos um campo: nome, email ou telefone." }` |
+| `400`  | nenhum campo enviado                                      | `{ "erro": "Envie ao menos um campo: nome, email, telefone ou notificacoesEmail." }` |
 | `400`  | `nome` vazio                                              | `{ "erro": "Informe seu nome." }`                              |
 | `400`  | e-mail inválido                                           | `{ "erro": "Informe um e-mail válido." }`                      |
 | `400`  | telefone diferente de 10 ou 11 dígitos                    | `{ "erro": "Telefone inválido. Informe 10 ou 11 dígitos." }`   |
+| `400`  | `notificacoesEmail` não é booleano                        | `{ "erro": "O campo notificacoesEmail deve ser verdadeiro ou falso." }` |
 | `409`  | e-mail já usado por outro doador                          | `{ "erro": "E-mail já cadastrado. Deseja recuperar a senha?" }` |
 | `401`  | token ausente ou inválido                                 | mensagens de token acima                                       |
 | `404`  | doador do token não existe mais                           | `{ "erro": "Doador não encontrado." }`                         |

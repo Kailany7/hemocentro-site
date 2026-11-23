@@ -13,6 +13,7 @@ const colecoes = Object.freeze([
   "LocaisColeta",
   "UnidadesMoveis",
   "GeocodingCache",
+  "NotificacoesLog",
 ]);
 
 async function garantirColecoes(database) {
@@ -53,13 +54,23 @@ const indicesUnicos = Object.freeze([
     campo: "doadorId",
     opcoes: { unique: true },
   },
+  {
+    // Garante que cada doador só receba uma notificação por campanha.
+    colecao: "NotificacoesLog",
+    campo: "campanhaId_doadorId",
+    opcoes: { unique: true, partialFilterExpression: { status: "enviado" } },
+  },
 ]);
 
 async function garantirIndicesUnicos(database) {
   await Promise.all(
-    indicesUnicos.map(({ colecao, campo, opcoes }) =>
-      database.collection(colecao).createIndex({ [campo]: 1 }, opcoes),
-    ),
+    indicesUnicos.map(({ colecao, campo, opcoes }) => {
+      // Índice composto: campo no formato "a_b" vira { a: 1, b: 1 }.
+      const chaves = campo.includes("_") && campo !== "_id"
+        ? Object.fromEntries(campo.split("_").map((c) => [c, 1]))
+        : { [campo]: 1 };
+      return database.collection(colecao).createIndex(chaves, opcoes);
+    }),
   );
 }
 

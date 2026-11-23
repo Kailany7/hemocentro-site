@@ -12,6 +12,7 @@ const VALIDADE_TOKEN = "1d";
 const CAMPOS_CADASTRO = ["nome", "email", "tipoSanguineo", "senha", "cpf"];
 const CAMPOS_LOGIN = ["email", "senha"];
 const CAMPOS_SENHA = ["senhaAtual", "novaSenha"];
+const NOTIFICACOES_EMAIL_PADRAO = true;
 const TAMANHO_MINIMO_SENHA = 6;
 const TAMANHO_MAXIMO_CARTEIRA = 8 * 1024 * 1024;
 const TIPOS_CARTEIRA = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
@@ -63,6 +64,7 @@ function paraDoadorPublico(documento, carteira = null) {
     cpf: documento.cpf,
     telefone: documento.telefone,
     status: documento.status,
+    notificacoesEmail: documento.notificacoesEmail !== false,
     createdAt: documento.createdAt,
     updatedAt: documento.updatedAt,
     carteira: carteira
@@ -381,6 +383,8 @@ export async function cadastrar(body) {
     status: "Em triagem",
     // O tipo sanguineo so e confirmado pelo hemocentro na primeira doacao.
     tipoSanguineoVerificado: false,
+    // Opt-in por padrão: doadores recebem notificações de campanhas por e-mail.
+    notificacoesEmail: NOTIFICACOES_EMAIL_PADRAO,
     createdAt: agora,
     updatedAt: agora,
   };
@@ -478,10 +482,21 @@ export async function atualizarPerfil(id, body) {
     }
   }
 
+  // Preferência de notificações por e-mail (opcional, booleano).
+  if (body?.notificacoesEmail !== undefined) {
+    if (typeof body.notificacoesEmail !== "boolean") {
+      return {
+        status: 400,
+        body: { erro: "O campo notificacoesEmail deve ser verdadeiro ou falso." },
+      };
+    }
+    alteracoes.notificacoesEmail = body.notificacoesEmail;
+  }
+
   if (Object.keys(alteracoes).length === 0 && !removerTelefone) {
     return {
       status: 400,
-      body: { erro: "Envie ao menos um campo: nome, email ou telefone." },
+      body: { erro: "Envie ao menos um campo: nome, email, telefone ou notificacoesEmail." },
     };
   }
 
