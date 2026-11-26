@@ -5,6 +5,8 @@ import {
   atualizarPerfil,
   buscarDoadorPorId,
   cadastrar,
+  excluirCarteira,
+  enviarCarteira,
   login,
 } from "../services/doadorAuthService.js";
 
@@ -13,6 +15,7 @@ const CAMINHOS = Object.freeze({
   login: "/api/doador/login",
   perfil: "/api/doador/perfil",
   senha: "/api/doador/senha",
+  carteira: "/api/doador/carteira",
 });
 
 export async function rotearDoador(request, response, url) {
@@ -50,6 +53,23 @@ export async function rotearDoador(request, response, url) {
     if (!autenticarDoador(request, response)) return;
 
     const resultado = await alterarSenha(request.doadorId, await lerBody(request));
+    responder(response, resultado.status, resultado.body);
+    return;
+  }
+
+  if (request.method === "POST" && caminho === CAMINHOS.carteira) {
+    if (!autenticarDoador(request, response)) return;
+    const resultado = await enviarCarteira(
+      request.doadorId,
+      await lerBody(request, 12 * 1024 * 1024),
+    );
+    responder(response, resultado.status, resultado.body);
+    return;
+  }
+
+  if (request.method === "DELETE" && caminho === CAMINHOS.carteira) {
+    if (!autenticarDoador(request, response)) return;
+    const resultado = await excluirCarteira(request.doadorId);
     responder(response, resultado.status, resultado.body);
     return;
   }

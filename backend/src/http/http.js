@@ -10,9 +10,24 @@ export function responder(response, status, body) {
   response.end(body === null ? undefined : JSON.stringify(body));
 }
 
-export async function lerBody(request) {
+export async function lerBody(request, limiteBytes = 1024 * 1024) {
+  const tamanhoDeclarado = Number(request.headers["content-length"] ?? 0);
+  if (tamanhoDeclarado > limiteBytes) {
+    const erro = new Error("O arquivo excede o limite de 8 MB.");
+    erro.status = 413;
+    throw erro;
+  }
   const partes = [];
-  for await (const parte of request) partes.push(parte);
+  let tamanho = 0;
+  for await (const parte of request) {
+    tamanho += parte.length;
+    if (tamanho > limiteBytes) {
+      const erro = new Error("O arquivo excede o limite de 8 MB.");
+      erro.status = 413;
+      throw erro;
+    }
+    partes.push(parte);
+  }
   if (!partes.length) return {};
 
   try {

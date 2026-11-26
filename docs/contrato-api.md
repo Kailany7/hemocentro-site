@@ -9,7 +9,7 @@ O painel `/gestao` **não faz parte deste repositório** e não é documentado a
 
 ## Convenções
 
-- **Base:** `http://localhost:${PORT}` (o `PORT` vem do `.env`; o valor padrão do backend é `3001`).
+- **Base:** `http://localhost:${PORT}` (o `PORT` vem do `.env`; o valor padrão do backend é `3002`).
 - **Formato:** JSON, com `Content-Type: application/json; charset=utf-8` nas respostas.
 - **CORS:** todas as respostas enviam `Access-Control-Allow-Origin: *`, e requisições `OPTIONS`
   recebem `204` sem corpo.
@@ -31,7 +31,6 @@ O painel `/gestao` **não faz parte deste repositório** e não é documentado a
 | `Campanhas`         | somente leitura            | gerencia                 |
 | `LocaisColeta`      | somente leitura            | gerencia                 |
 | `UnidadesMoveis`    | somente leitura            | gerencia                 |
-| `GeocodingCache`    | cria e atualiza (cache)    | —                        |
 
 Na primeira conexão o backend cria as coleções que ainda não existirem e garante os índices únicos
 parciais de `email` e `cpf` em `DoadoresCCadastro`. Nenhum dado existente é removido.
@@ -126,11 +125,9 @@ Campos:
 | `atualizadoEm`        | string ISO (opcional)   | `updatedAt` ou `createdAt`                                        |
 | `latitude`            | number (opcional)       | `latitude` ou `lat`                                               |
 | `longitude`           | number (opcional)       | `longitude`, `lng` ou `lon`                                       |
-| `positionApproximate` | boolean (opcional)      | `true` quando a posição veio da geocodificação                    |
 
-Se a campanha não tiver coordenadas, o backend geocodifica o `endereco` (usando `cidade`/`estado`
-do documento ou `Campina Grande`/`PB` por padrão) e acrescenta `latitude`, `longitude` e
-`positionApproximate: true`. Sem geocodificação, a campanha é devolvida sem coordenadas.
+Os cards usam endereço, CEP, cidade e estado para abrir uma busca no Google Maps.
+A API devolve as coordenadas já cadastradas, quando presentes, sem consultar serviços de geocodificação.
 
 Exemplo de resposta:
 
@@ -148,8 +145,7 @@ Exemplo de resposta:
       "status": "Ativa",
       "atualizadoEm": "2026-11-09T22:44:37.438Z",
       "latitude": -7.2331317,
-      "longitude": -35.8662144,
-      "positionApproximate": true
+      "longitude": -35.8662144
     }
   ]
 }
@@ -176,7 +172,6 @@ Campos:
 | `longitude`           | number (opcional)     | `longitude`/`lng`/`lon`                                             |
 | `cidade`              | string (opcional)     | `cidade`/`municipio`, inclusive dentro de `endereco`                 |
 | `estado`              | string (opcional)     | `estado`/`uf`                                                       |
-| `positionApproximate` | boolean (opcional)    | `true` quando a posição veio da geocodificação                      |
 
 Exemplo de resposta:
 
@@ -193,26 +188,22 @@ Exemplo de resposta:
       "latitude": -7.23836975,
       "longitude": -35.87332195,
       "cidade": "Campina Grande",
-      "estado": "PB",
-      "positionApproximate": true
+      "estado": "PB"
     }
   ]
 }
 ```
 
-### Geocodificação
+### Links para o Google Maps
 
-Os endereços sem coordenadas são resolvidos pelo Nominatim (OpenStreetMap):
+Locais e campanhas aceitam `cep`/`CEP` na raiz ou dentro de `endereco`, além do CEP
+incluído no texto do endereço. O frontend monta links com endereço, CEP, cidade,
+estado e Brasil. Quando não há endereço nem CEP, utiliza o nome do local.
+Campina Grande/PB é o padrão quando cidade e estado não estão cadastrados.
 
-- uma requisição por vez, com intervalo mínimo de ~1,1 s entre chamadas;
-- resultado (inclusive o negativo) guardado na coleção `GeocodingCache`;
-- cache negativo expira em 24 h;
-- a posição só é aceita quando rua, cidade e estado conferem; resultados de uma mesma rua só são
-  aproximados se estiverem a menos de 300 m entre si.
-
-Por isso, a primeira chamada a `/api/campanhas` ou `/api/locais` pode demorar: o backend está
-geocodificando. Se o Nominatim falhar ou não encontrar o endereço, o local continua na resposta,
-apenas sem `latitude`/`longitude`. O frontend sinaliza esses casos como "sem posição confirmada".
+Os cards abrem o Google Maps em outra aba. Não há mapa incorporado, consultas a
+provedores de CEP ou geocodificação durante a leitura dos dados públicos.
+Não é necessária chave de API.
 
 ---
 
@@ -242,6 +233,7 @@ Formato público do doador (usado em cadastro, login e perfil):
 | `cpf`                     | string  | apenas dígitos                                        |
 | `telefone`                | string  | apenas dígitos; ausente quando não informado          |
 | `status`                  | string  | inicia como `Em triagem`                              |
+| `notificacoesEmail`       | boolean | preferências de recebimento de campanhas por e-mail   |
 | `createdAt`               | string  | data ISO                                              |
 | `updatedAt`               | string  | data ISO                                              |
 
@@ -372,7 +364,7 @@ Erros:
 
 ### PATCH `/api/doador/perfil`
 
-Atualiza apenas `nome`, `email` e `telefone`. Qualquer outro campo enviado é ignorado. Exige token.
+Atualiza `nome`, `email`, `telefone` e/ou `notificacoesEmail`. Qualquer outro campo enviado é ignorado. Exige token.
 
 Pedido:
 
@@ -384,13 +376,15 @@ Content-Type: application/json
 {
   "nome": "Marina Alves Souza",
   "email": "marina.souza@email.com",
-  "telefone": "(83) 98888-1111"
+  "telefone": "(83) 98888-1111",
+  "notificacoesEmail": false
 }
 ```
 
 - Todos os campos são opcionais, mas **pelo menos um** precisa ser enviado.
 - `telefone` enviado como `null` ou string vazia **remove** o telefone do cadastro.
 - `nome` vazio é rejeitado.
+- `notificacoesEmail` deve ser booleano (`true` para receber alertas de campanhas, `false` para silenciar).
 
 `200 OK`: devolve o doador já atualizado, no formato público.
 
@@ -398,10 +392,11 @@ Erros:
 
 | Código | Quando                                                    | Corpo                                                          |
 | ------ | --------------------------------------------------------- | -------------------------------------------------------------- |
-| `400`  | nenhum campo enviado                                      | `{ "erro": "Envie ao menos um campo: nome, email ou telefone." }` |
+| `400`  | nenhum campo enviado                                      | `{ "erro": "Envie ao menos um campo: nome, email, telefone ou notificacoesEmail." }` |
 | `400`  | `nome` vazio                                              | `{ "erro": "Informe seu nome." }`                              |
 | `400`  | e-mail inválido                                           | `{ "erro": "Informe um e-mail válido." }`                      |
 | `400`  | telefone diferente de 10 ou 11 dígitos                    | `{ "erro": "Telefone inválido. Informe 10 ou 11 dígitos." }`   |
+| `400`  | `notificacoesEmail` não é booleano                        | `{ "erro": "O campo notificacoesEmail deve ser verdadeiro ou falso." }` |
 | `409`  | e-mail já usado por outro doador                          | `{ "erro": "E-mail já cadastrado. Deseja recuperar a senha?" }` |
 | `401`  | token ausente ou inválido                                 | mensagens de token acima                                       |
 | `404`  | doador do token não existe mais                           | `{ "erro": "Doador não encontrado." }`                         |
@@ -445,35 +440,35 @@ Erros:
 
 ```bash
 # 1. Health check
-curl http://localhost:3001/api/health
+curl http://localhost:3002/api/health
 
 # 2. Dados públicos da landing
-curl http://localhost:3001/api/estoques
-curl http://localhost:3001/api/campanhas
-curl http://localhost:3001/api/locais
+curl http://localhost:3002/api/estoques
+curl http://localhost:3002/api/campanhas
+curl http://localhost:3002/api/locais
 
 # 3. Cadastro
-curl -X POST http://localhost:3001/api/doador/cadastro \
+curl -X POST http://localhost:3002/api/doador/cadastro \
   -H "Content-Type: application/json" \
   -d '{"nome":"Marina Alves","email":"marina.alves@email.com","tipoSanguineo":"O-","senha":"segredo123","cpf":"12345678900"}'
 
 # 4. Login (guarde o token da resposta)
-curl -X POST http://localhost:3001/api/doador/login \
+curl -X POST http://localhost:3002/api/doador/login \
   -H "Content-Type: application/json" \
   -d '{"email":"marina.alves@email.com","senha":"segredo123"}'
 
 # 5. Perfil
-curl http://localhost:3001/api/doador/perfil \
+curl http://localhost:3002/api/doador/perfil \
   -H "Authorization: Bearer COLE_O_TOKEN_AQUI"
 
 # 6. Atualizar perfil
-curl -X PATCH http://localhost:3001/api/doador/perfil \
+curl -X PATCH http://localhost:3002/api/doador/perfil \
   -H "Authorization: Bearer COLE_O_TOKEN_AQUI" \
   -H "Content-Type: application/json" \
   -d '{"telefone":"(83) 98888-1111"}'
 
 # 7. Trocar senha
-curl -X PATCH http://localhost:3001/api/doador/senha \
+curl -X PATCH http://localhost:3002/api/doador/senha \
   -H "Authorization: Bearer COLE_O_TOKEN_AQUI" \
   -H "Content-Type: application/json" \
   -d '{"senhaAtual":"segredo123","novaSenha":"novaSenha456"}'

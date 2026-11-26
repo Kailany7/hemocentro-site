@@ -33,7 +33,7 @@ Consequências práticas dessa divisão:
 - Vite 8
 - Tailwind CSS 4
 - Componentes Radix UI / shadcn/ui, `lucide-react` para ícones e `sonner` para avisos
-- Leaflet com tiles do OpenStreetMap para o mapa de locais de coleta
+- Cards de locais de coleta com links diretos para o Google Maps
 
 **Backend**
 
@@ -68,7 +68,6 @@ backend/
       public-data-router.js       Rotas públicas da landing
     services/
       doadorAuthService.js        Regras de cadastro, login, perfil e troca de senha
-      geocoding-service.js        Geocodificação de endereços com cache (GeocodingCache)
       public-data-service.js      Normaliza os documentos do MongoDB para a landing
   tests/
     features/                     Especificações Gherkin (landing, plataforma do doador e sistema privado)
@@ -80,7 +79,7 @@ frontend/
     features/
       auth/                       Sessão do doador: token no localStorage, provider e hook
       doador/                     Componentes da área do doador
-      site/                       Landing: seções, dados públicos, hooks, tipos e mapa Leaflet
+      site/                       Landing: seções, dados públicos, hooks, tipos e cards de locais
     hooks/                        Hooks compartilhados
     images/                       Imagens e ícones da aplicação
     lib/                          Utilitários, formatadores e páginas de erro
@@ -127,7 +126,7 @@ copy .env.example .env    # Windows (Prompt de Comando)
 | -------------- | ----------------------------------------------------------------------------------------------------------- |
 | `MONGODB_URI`  | String de conexão do MongoDB. É o endereço do cluster/instância, com usuário e senha.                       |
 | `MONGODB_DB`   | Nome do banco usado pela aplicação. Deve ser **`HemoHelp`**, o mesmo usado pelo painel de gestão.            |
-| `PORT`         | Porta em que a API do backend escuta. O backend usa `3001` quando a variável não é definida.                 |
+| `PORT`         | Porta em que a API do backend escuta. O backend usa `3002` quando a variável não é definida.                 |
 | `VITE_API_URL` | URL base da API consumida pelo frontend, **incluindo o `/api`** (o frontend concatena `/estoques`, `/doador/login` etc.). |
 | `JWT_SECRET`   | Segredo usado para assinar e validar o token do doador. Sem ele, login, perfil e troca de senha falham.     |
 
@@ -145,9 +144,9 @@ npm install
 node backend/server.js
 ```
 
-O equivalente é `npm run dev:backend`. A API sobe em `http://localhost:${PORT}` e, ao iniciar,
-conecta ao MongoDB para garantir as coleções e os índices únicos de `email` e `cpf` em
-`DoadoresCCadastro`.
+O equivalente é `npm run dev:backend`. A API sobe em `http://localhost:${PORT}` (com o
+`.env.example`, `http://localhost:3002`) e, ao iniciar, conecta ao MongoDB para garantir as coleções
+e os índices únicos de `email` e `cpf` em `DoadoresCCadastro`.
 
 ### 4.5 Subir o site (terminal 2)
 
@@ -155,7 +154,9 @@ conecta ao MongoDB para garantir as coleções e os índices únicos de `email` 
 npm run dev
 ```
 
-O Vite sobe o frontend (com SSR) e passa a consumir a API definida em `VITE_API_URL`.
+O Vite sobe o frontend (com SSR) em `http://localhost:5174` e passa a consumir a API definida em
+`VITE_API_URL`. A porta 5174 está fixada em `vite.config.ts` (`server.port`) para não disputar a
+5173 com o painel `HemoHelpSistema`.
 
 ### 4.6 Outros comandos
 
@@ -302,7 +303,7 @@ Regras principais:
 
 | Rota               | Tela              | O que faz                                                                                              |
 | ------------------ | ----------------- | ------------------------------------------------------------------------------------------------------ |
-| `/`                | Landing           | Hero, estoque de sangue, campanhas, locais de coleta com mapa Leaflet, critérios de doação e sobre. Os dados vêm de `/api/estoques`, `/api/campanhas` e `/api/locais`, com dados fixos de fallback. |
+| `/`                | Landing           | Hero, estoque de sangue, campanhas, cards de locais de coleta com links para o Google Maps, critérios de doação e sobre. Os dados vêm de `/api/estoques`, `/api/campanhas` e `/api/locais`, com dados fixos de fallback. |
 | `/doador/cadastro` | Criar conta       | Formulário de cadastro do doador (nome, e-mail, tipo sanguíneo, CPF, telefone e senha).                 |
 | `/doador/login`    | Entrar            | Login com e-mail e senha; guarda o token no `localStorage`.                                             |
 | `/doador`          | Área do doador    | Saudação, card "Próxima doação", campanhas ativas e locais de coleta. Exige login.                       |

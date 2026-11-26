@@ -24,12 +24,19 @@ export const Route = createFileRoute("/")({
 
 function PaginaInicial() {
   const { estoque, campanhas, locais, loading } = usePublicData();
+  const ultimaAtualizacaoEstoque = estoque.reduce<string | undefined>((maisRecente, item) => {
+    if (!item.atualizadoEm || Number.isNaN(Date.parse(item.atualizadoEm))) return maisRecente;
+
+    return !maisRecente || Date.parse(item.atualizadoEm) > Date.parse(maisRecente)
+      ? item.atualizadoEm
+      : maisRecente;
+  }, undefined);
 
   return (
     <div className="landing flex min-h-screen flex-col bg-background">
       <Header />
       <main className="flex-1">
-        <Hero />
+        <Hero atualizadoEm={ultimaAtualizacaoEstoque} />
         <EstoqueSection items={estoque} loading={loading} />
         <CampanhasSection campaigns={campanhas} locations={locais} loading={loading} />
         <LocaisSection campaigns={campanhas} locations={locais} loading={loading} />

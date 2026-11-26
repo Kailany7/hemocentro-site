@@ -1,7 +1,7 @@
 // Autenticação do doador: cadastro, login, perfil e controle do token no localStorage.
 const CHAVE_TOKEN = "hemohelp_doador_token";
 
-const apiBaseUrl = (import.meta.env["VITE_API_URL"] ?? "http://localhost:3001/api").replace(
+const apiBaseUrl = (import.meta.env["VITE_API_URL"] ?? "http://localhost:3002/api").replace(
   /\/$/,
   "",
 );
@@ -16,8 +16,19 @@ export type Doador = {
   cpf?: string;
   telefone?: string;
   status?: string;
+  // Preferência de notificações de campanhas por e-mail (padrão: true).
+  notificacoesEmail?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  carteira?: {
+    url: string;
+    publicId: string;
+    resourceType?: string;
+    format?: string;
+    version?: number;
+    fileName: string;
+    uploadedAt: string;
+  } | null;
 };
 
 export type DadosCadastro = {
@@ -25,7 +36,6 @@ export type DadosCadastro = {
   email: string;
   tipoSanguineo: string;
   senha: string;
-  cpf: string;
   telefone?: string;
 };
 
@@ -33,6 +43,7 @@ export type DadosPerfil = {
   nome?: string;
   email?: string;
   telefone?: string;
+  notificacoesEmail?: boolean;
 };
 
 export type DadosSenha = {
@@ -133,6 +144,30 @@ export function alterarSenhaDoador(dados: DadosSenha) {
     "/doador/senha",
     comToken({ method: "PATCH", body: JSON.stringify(dados) }),
   );
+}
+
+export async function enviarCarteiraDoador(arquivo: File) {
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const resultado = String(reader.result ?? "");
+      resolve(resultado.slice(resultado.indexOf(",") + 1));
+    };
+    reader.onerror = () => reject(new ErroApi("Não foi possível ler o arquivo selecionado.", 0));
+    reader.readAsDataURL(arquivo);
+  });
+
+  return requisicao<Doador>(
+    "/doador/carteira",
+    comToken({
+      method: "POST",
+      body: JSON.stringify({ fileName: arquivo.name, mimeType: arquivo.type, base64 }),
+    }),
+  );
+}
+
+export function excluirCarteiraDoador() {
+  return requisicao<Doador>("/doador/carteira", comToken({ method: "DELETE" }));
 }
 
 export function salvarToken(token: string) {

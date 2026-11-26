@@ -1,14 +1,28 @@
 import { ArrowRight, ChevronDown, Droplets, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function Hero() {
+interface HeroProps {
+  atualizadoEm?: string;
+}
+
+export function Hero({ atualizadoEm }: HeroProps) {
+  const dataAtualizacao = atualizadoEm
+    ? new Date(atualizadoEm).toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        timeZone: "America/Sao_Paulo",
+      })
+    : null;
+
   return (
     <section id="inicio" className="relative overflow-hidden">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-20 pt-16 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:pb-28 lg:pt-24">
         {/* Coluna da esquerda: textos e botões */}
         <div className="hero-intro relative z-10 max-w-2xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-success-soft px-3.5 py-2 text-xs font-bold text-success">
-            <span className="size-2 rounded-full bg-success" /> Estoque atualizado hoje, às 8h
+            <span className="size-2 rounded-full bg-success" />
+            {dataAtualizacao ? `Estoque atualizado em ${dataAtualizacao}` : "Estoque atualizado"}
           </div>
 
           <h1 className="text-5xl font-extrabold leading-[1.04] tracking-[-0.055em] text-foreground sm:text-6xl lg:text-[4.5rem]">
@@ -50,14 +64,14 @@ export function Hero() {
                 backgroundSize: "18px 18px",
               }}
             />
-            <div className="relative flex min-h-[390px] flex-col justify-between p-7 sm:min-h-[460px] sm:p-10">
-              <div className="flex items-center justify-between">
+            <div className="relative flex min-h-[430px] flex-col justify-between p-7 sm:min-h-[480px] sm:p-10">
+              <div className="flex shrink-0 items-center justify-between">
                 <span className="rounded-full bg-primary-foreground/15 px-3 py-1.5 text-xs font-bold text-primary-foreground">
                   Doe hoje
                 </span>
                 <HeartPulse className="text-primary-foreground/70" />
               </div>
-              <div className="w-full">
+              <div className="w-full shrink-0">
                 <div className="mb-3 flex size-20 items-center justify-center rounded-full bg-primary-foreground/10 ring-1 ring-primary-foreground/25 sm:size-24">
                   <Droplets className="size-10 text-primary-foreground sm:size-12" />
                 </div>
@@ -83,7 +97,7 @@ export function Hero() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center justify-between border-t border-primary-foreground/20 pt-5 text-sm text-primary-foreground/75">
+              <div className="flex shrink-0 items-center justify-between border-t border-primary-foreground/20 pt-5 text-sm text-primary-foreground/75">
                 <span>HemoHelp</span>
                 <span>Juntos pela vida</span>
               </div>

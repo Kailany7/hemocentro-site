@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CAMPANHAS_FIXAS, ESTOQUE_FIXO, LOCAIS_FIXOS } from "../data/exemplo";
+import { ESTOQUE_FIXO, LOCAIS_FIXOS } from "../data/exemplo";
 import { dadosPublicosApi } from "../services/public-data-api";
 import type { Campaign, CollectionLocation, StockItem } from "../types/public-data";
 
@@ -10,16 +10,14 @@ type ErrosPublicos = {
 };
 
 interface UsePublicDataOptions {
-  // A landing mostra os dados fixos enquanto a API nao responde. A area do
-  // doador desliga esse fallback para nunca exibir dados ficticios.
+  // A landing pode usar dados fixos para estoque e locais; campanhas vêm da API.
   usarDadosFixos?: boolean;
 }
 
-// Os dados fixos aparecem de imediato e continuam na tela se a API falhar.
-// Quando a API responde, mesmo com lista vazia, ela passa a ser a fonte da verdade.
+// Os dados fixos de estoque e locais aparecem de imediato; campanhas são sempre reais.
 export function usePublicData({ usarDadosFixos = true }: UsePublicDataOptions = {}) {
   const [estoque, setEstoque] = useState<StockItem[]>(usarDadosFixos ? ESTOQUE_FIXO : []);
-  const [campanhas, setCampanhas] = useState<Campaign[]>(usarDadosFixos ? CAMPANHAS_FIXAS : []);
+  const [campanhas, setCampanhas] = useState<Campaign[]>([]);
   const [locais, setLocais] = useState<CollectionLocation[]>(usarDadosFixos ? LOCAIS_FIXOS : []);
   const [loading, setLoading] = useState(true);
   // Erros separados por recurso, para a area do doador saber exatamente o que falhou.

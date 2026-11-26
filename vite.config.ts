@@ -10,6 +10,8 @@ export default defineConfig({
   resolve: { alias: { "@": frontendSource } },
   // Arquivos estáticos (imagens, favicon) ficam em frontend/public
   publicDir: "frontend/public",
+  // Porta fixa para o site não disputar a 5173 com o painel HemoHelpSistema.
+  server: { port: 5174 },
   plugins: [
     tailwindcss(),
     tanstackStart({

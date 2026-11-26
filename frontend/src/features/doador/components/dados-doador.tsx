@@ -1,6 +1,6 @@
 import {
-  BadgeCheck,
-  CalendarCheck2,
+  Bell,
+  BellOff,
   ClipboardCheck,
   Droplets,
   IdCard,
@@ -14,8 +14,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatarCpf } from "@/lib/formatadores";
 
 const NAO_INFORMADO = "Não informado";
-const SEM_DOACAO = "Nenhuma doação registrada";
-
 type DadosDoadorProps = {
   nome: string;
   email: string;
@@ -23,11 +21,8 @@ type DadosDoadorProps = {
   // Guardado só com números; a máscara é aplicada na exibição.
   cpf: string | null;
   tipoSanguineo: string;
-  tipoSanguineoVerificado: boolean;
   status: string | null;
-  // A API de perfil ainda não devolve histórico de doações.
-  ultimaDoacao: string | null;
-  totalDoacoes: number | null;
+  notificacoesEmail?: boolean;
 };
 
 function Campo({
@@ -42,15 +37,17 @@ function Campo({
   selo?: string | undefined;
 }) {
   return (
-    <Card className="border-border shadow-panel">
+    <Card className="min-w-0 border-border shadow-panel">
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-          <Icone className="size-4 text-primary" />
+        <CardTitle className="flex min-w-0 items-center gap-2 text-sm font-semibold text-muted-foreground">
+          <Icone className="size-4 shrink-0 text-primary" />
           {titulo}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
-        <p className="text-lg font-bold text-foreground">{valor}</p>
+      <CardContent className="min-w-0 space-y-2">
+        <p className="break-words text-lg font-bold text-foreground [overflow-wrap:anywhere]">
+          {valor}
+        </p>
         {selo && <Badge variant="secondary">{selo}</Badge>}
       </CardContent>
     </Card>
@@ -63,10 +60,8 @@ export function DadosDoador({
   telefone,
   cpf,
   tipoSanguineo,
-  tipoSanguineoVerificado,
   status,
-  ultimaDoacao,
-  totalDoacoes,
+  notificacoesEmail = true,
 }: DadosDoadorProps) {
   return (
     <div className="space-y-8">
@@ -76,10 +71,16 @@ export function DadosDoador({
           <p className="text-sm text-muted-foreground">Você pode editar estas informações.</p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Campo titulo="Nome" valor={nome} icone={UserRound} />
           <Campo titulo="E-mail" valor={email} icone={Mail} />
           <Campo titulo="Telefone" valor={telefone ?? NAO_INFORMADO} icone={Phone} />
+          <Campo
+            titulo="Notificações por e-mail"
+            valor={notificacoesEmail ? "Ativadas" : "Desativadas"}
+            icone={notificacoesEmail ? Bell : BellOff}
+            selo={notificacoesEmail ? undefined : "Silenciado"}
+          />
         </div>
       </section>
 
@@ -97,15 +98,8 @@ export function DadosDoador({
             titulo="Tipo sanguíneo"
             valor={tipoSanguineo}
             icone={Droplets}
-            selo={tipoSanguineoVerificado ? undefined : "Em verificação"}
           />
           <Campo titulo="Status" valor={status ?? "Em triagem"} icone={ClipboardCheck} />
-          <Campo titulo="Última doação" valor={ultimaDoacao ?? SEM_DOACAO} icone={CalendarCheck2} />
-          <Campo
-            titulo="Doações realizadas"
-            valor={totalDoacoes === null ? SEM_DOACAO : String(totalDoacoes)}
-            icone={BadgeCheck}
-          />
         </div>
       </section>
     </div>

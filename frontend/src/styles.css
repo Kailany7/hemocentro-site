@@ -235,30 +235,6 @@
   --destructive: oklch(0.63 0.23 38);
 }
 
-/* Marcadores do mapa Leaflet */
-.hemo-map-marker {
-  background: transparent;
-  border: 0;
-}
-
-.hemo-map-marker-inner {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  color: white;
-  background: var(--color-primary);
-  border: 3px solid white;
-  border-radius: 50%;
-  box-shadow: 0 7px 20px oklch(0.24 0.035 253 / 30%);
-  transition: transform 180ms ease;
-}
-
-.hemo-map-marker:hover .hemo-map-marker-inner,
-.hemo-map-marker:focus .hemo-map-marker-inner {
-  transform: scale(1.12);
-}
-
 /* Hero: cartão de impacto com batimento cardíaco */
 @media (prefers-reduced-motion: no-preference) {
   .hero-intro {

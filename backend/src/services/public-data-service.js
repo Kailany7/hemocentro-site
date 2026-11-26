@@ -4,7 +4,19 @@ import {
   listarEstoque,
   listarLocais,
 } from "../repositories/public-data-repository.js";
-import { geocodificarEndereco } from "./geocoding-service.js";
+function extrairCep(valor) {
+  return String(valor ?? "")
+    .match(/\b\d{5}-?\d{3}\b/)?.[0]
+    .replace(/\D/g, "");
+}
+
+function cepDoDocumento(documento) {
+  const endereco = objeto(documento, "endereco");
+  return (
+    extrairCep(documento.cep ?? documento.CEP ?? endereco.cep ?? endereco.CEP) ||
+    extrairCep(texto(documento, "endereco", "endereço"))
+  );
+}
 
 function texto(documento, ...campos) {
   for (const campo of campos) {
@@ -39,8 +51,7 @@ function enderecoDaUnidadeMovel(documento) {
     texto(endereco, "rua", "logradouro", "endereco");
   const bairro = texto(documento, "bairro") || texto(endereco, "bairro");
 
-  return bairro &&
-    !rua.toLocaleLowerCase("pt-BR").includes(bairro.toLocaleLowerCase("pt-BR"))
+  return bairro && !rua.toLocaleLowerCase("pt-BR").includes(bairro.toLocaleLowerCase("pt-BR"))
     ? [rua, bairro].filter(Boolean).join(", ")
     : rua || bairro;
 }
@@ -102,7 +113,13 @@ function periodo(documento) {
 }
 
 function faixaDeHorario(documento) {
-  const explicito = texto(documento, "horario", "horário");
+  const explicito = texto(
+    documento,
+    "horario",
+    "horário",
+    "horarioFuncionamento",
+    "horarioAtendimento",
+  );
   if (explicito) return explicito;
 
   const inicio = texto(documento, "horarioInicio", "horaInicio");
@@ -121,10 +138,7 @@ function enderecoDaCampanha(documento) {
   const endereco = texto(documento, "endereco") || texto(camposDeEndereco, "endereco") || rua;
 
   if (!endereco) return bairro;
-  if (
-    !bairro ||
-    endereco.toLocaleLowerCase("pt-BR").includes(bairro.toLocaleLowerCase("pt-BR"))
-  ) {
+  if (!bairro || endereco.toLocaleLowerCase("pt-BR").includes(bairro.toLocaleLowerCase("pt-BR"))) {
     return endereco;
   }
   return `${endereco}, ${bairro}`;
@@ -152,7 +166,10 @@ export async function obterEstoque() {
     const tipo = texto(documento, "tipo", "nome", "tipoSanguineo");
     if (!tipo) return [];
 
-    const valor = Math.min(100, Math.max(0, numero(documento, "porcentagem", "valor", "nivel") ?? 0));
+    const valor = Math.min(
+      100,
+      Math.max(0, numero(documento, "porcentagem", "valor", "nivel") ?? 0),
+    );
     const status = texto(documento, "status", "situacao");
     const tom = tomDoEstoque(status, valor);
 
@@ -186,6 +203,7 @@ export async function obterCampanhas() {
           data: periodo(documento),
           local: texto(documento, "local", "localNome", "unidade") || undefined,
           endereco: enderecoDaCampanha(documento) || undefined,
+          cep: cepDoDocumento(documento),
           horario: faixaDeHorario(documento) || undefined,
           imagem: texto(documento, "imagem", "imagemUrl", "imageUrl", "urlImagem"),
           meta: texto(documento, "meta", "objetivo") || undefined,
@@ -193,34 +211,21 @@ export async function obterCampanhas() {
           atualizadoEm: paraDataIso(documento.updatedAt ?? documento.createdAt),
           latitude: numero(documento, "latitude", "lat"),
           longitude: numero(documento, "longitude", "lng", "lon"),
-          cidade: texto(documento, "cidade", "municipio") || undefined,
-          estado: texto(documento, "estado", "uf") || undefined,
+          cidade:
+            texto(documento, "cidade", "municipio") ||
+            texto(objeto(documento, "endereco"), "cidade", "municipio") ||
+            undefined,
+          estado:
+            texto(documento, "estado", "uf") ||
+            texto(objeto(documento, "endereco"), "estado", "uf") ||
+            undefined,
           _inicio: inicioDaCampanha(documento),
         },
       ];
     })
     .sort((a, b) => a._inicio - b._inicio);
 
-  return Promise.all(
-    campanhas.map(async ({ _inicio, cidade, estado, ...campanha }) => {
-      if (
-        campanha.latitude !== undefined &&
-        campanha.longitude !== undefined &&
-        Math.abs(campanha.latitude) <= 90 &&
-        Math.abs(campanha.longitude) <= 180
-      ) {
-        return campanha;
-      }
-      if (!campanha.endereco) return campanha;
-
-      const posicao = await geocodificarEndereco(
-        campanha.endereco,
-        cidade || "Campina Grande",
-        estado || "PB",
-      );
-      return posicao ? { ...campanha, ...posicao, positionApproximate: true } : campanha;
-    }),
-  );
+  return campanhas.map(({ _inicio, ...campanha }) => campanha);
 }
 
 export async function obterLocais() {
@@ -238,10 +243,12 @@ export async function obterLocais() {
       {
         id: `${movel ? "movel-" : ""}${id(documento)}`,
         nome,
-        endereco: movel
-          ? enderecoDaUnidadeMovel(documento)
-          : texto(documento, "endereco", "endereço", "logradouro"),
-        horario: texto(documento, "horario", "horário", "horarioFuncionamento"),
+        endereco:
+          texto(documento, "endereço") ||
+          enderecoDaCampanha(documento) ||
+          enderecoDaUnidadeMovel(documento),
+        cep: cepDoDocumento(documento),
+        horario: faixaDeHorario(documento),
         tipo: movel ? "movel" : "fixo",
         status: texto(documento, "status", "situacao") || undefined,
         placa: movel ? texto(documento, "placa") || undefined : undefined,
@@ -256,25 +263,5 @@ export async function obterLocais() {
     ];
   });
 
-  return Promise.all(
-    locais.map(async (local) => {
-      if (
-        local.latitude !== undefined &&
-        local.longitude !== undefined &&
-        Math.abs(local.latitude) <= 90 &&
-        Math.abs(local.longitude) <= 180
-      ) {
-        return local;
-      }
-
-      if (!local.endereco) return local;
-
-      const posicao = await geocodificarEndereco(
-        local.endereco,
-        local.cidade || "Campina Grande",
-        local.estado || "PB",
-      );
-      return posicao ? { ...local, ...posicao, positionApproximate: true } : local;
-    }),
-  );
+  return locais;
 }
