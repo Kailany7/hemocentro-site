@@ -51,18 +51,14 @@ function PerfilDoador() {
         <CarteiraDoador />
       </div>
 
-      {/* A API de perfil não devolve histórico de doações, então não há como exibir uma data. */}
       <DadosDoador
         nome={doador?.nome ?? "Doador"}
         email={doador?.email ?? "Não informado"}
         telefone={doador?.telefone ?? null}
         cpf={doador?.cpf ?? null}
         tipoSanguineo={doador?.tipoSanguineo ?? "A confirmar"}
-        tipoSanguineoVerificado={doador?.tipoSanguineoVerificado === true}
         status={doador?.status ?? null}
         notificacoesEmail={doador?.notificacoesEmail !== false}
-        ultimaDoacao={null}
-        totalDoacoes={null}
       />
 
       {editando && doador && (

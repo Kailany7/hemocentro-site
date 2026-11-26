@@ -9,7 +9,7 @@ const COLECAO = "DoadoresCCadastro";
 const COLECAO_CARTEIRAS = "CarteirasUsuarios";
 const CUSTO_BCRYPT = 10;
 const VALIDADE_TOKEN = "1d";
-const CAMPOS_CADASTRO = ["nome", "email", "tipoSanguineo", "senha", "cpf"];
+const CAMPOS_CADASTRO = ["nome", "email", "tipoSanguineo", "senha"];
 const CAMPOS_LOGIN = ["email", "senha"];
 const CAMPOS_SENHA = ["senhaAtual", "novaSenha"];
 const NOTIFICACOES_EMAIL_PADRAO = true;
@@ -19,8 +19,6 @@ const TIPOS_CARTEIRA = new Set(["application/pdf", "image/jpeg", "image/png", "i
 const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const EMAIL_EM_USO = "E-mail já cadastrado. Deseja recuperar a senha?";
 const CREDENCIAIS_INVALIDAS = "E-mail ou senha inválidos";
-const CPF_INVALIDO = "CPF inválido.";
-const CPF_EM_USO = "CPF já cadastrado.";
 const TELEFONE_INVALIDO = "Telefone inválido. Informe 10 ou 11 dígitos.";
 const DOADOR_NAO_ENCONTRADO = "Doador não encontrado.";
 
@@ -39,12 +37,6 @@ function camposAusentes(body, campos) {
 function opcional(body, campo) {
   const valor = body?.[campo];
   return typeof valor === "string" && valor.trim() !== "" ? valor.trim() : undefined;
-}
-
-// Fase de testes: só confere se tem 11 números.
-// TODO: validação completa de CPF após aprovação do projeto.
-function cpfValido(valor) {
-  return apenasDigitos(valor).length === 11;
 }
 
 // Telefone aceita fixo (10 digitos) ou celular (11 digitos).
@@ -350,12 +342,6 @@ export async function cadastrar(body) {
     return { status: 400, body: { erro: "Informe um e-mail válido." } };
   }
 
-  if (!cpfValido(body.cpf)) {
-    return { status: 400, body: { erro: CPF_INVALIDO } };
-  }
-  // Guarda apenas os numeros, sem a mascara.
-  const cpf = apenasDigitos(body.cpf);
-
   // O telefone e opcional, mas quando enviado precisa ter 10 ou 11 digitos.
   const telefoneBruto = opcional(body, "telefone");
   if (telefoneBruto !== undefined && !telefoneValido(telefoneBruto)) {
@@ -364,10 +350,6 @@ export async function cadastrar(body) {
   const telefone = telefoneBruto === undefined ? undefined : apenasDigitos(telefoneBruto);
 
   const colecao = await obterColecao(COLECAO);
-  if (await colecao.findOne({ cpf })) {
-    return { status: 409, body: { erro: CPF_EM_USO } };
-  }
-
   if (await buscarPorEmail(email)) {
     return { status: 409, body: { erro: EMAIL_EM_USO } };
   }
@@ -376,7 +358,6 @@ export async function cadastrar(body) {
   const documento = {
     nome: body.nome.trim(),
     email,
-    cpf,
     // O campo do cadastro atual do sistema se chama "tipo" no MongoDB.
     tipo: body.tipoSanguineo.trim(),
     senhaHash: await bcrypt.hash(body.senha, CUSTO_BCRYPT),
@@ -395,9 +376,8 @@ export async function cadastrar(body) {
     const resultado = await colecao.insertOne(documento);
     return { status: 201, body: paraDoadorPublico({ _id: resultado.insertedId, ...documento }) };
   } catch (error) {
-    // Os indices unicos evitam duas contas com o mesmo e-mail ou CPF no mesmo instante.
+    // O índice único evita duas contas com o mesmo e-mail no mesmo instante.
     if (error.code === 11000) {
-      if (error.keyPattern?.cpf) return { status: 409, body: { erro: CPF_EM_USO } };
       return { status: 409, body: { erro: EMAIL_EM_USO } };
     }
     throw error;

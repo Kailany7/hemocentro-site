@@ -19,35 +19,41 @@ export function obterLocaisDasCampanhas(
   locations: CollectionLocation[],
 ): LocalDeCampanha[] {
   return campaigns.flatMap((campanha) => {
-    if (!campanha.local?.trim() && !campanha.endereco?.trim()) return [];
+    if (!campanha.local?.trim() && !campanha.endereco?.trim() && !campanha.cep) return [];
 
     const localDaCampanha = normalizar(campanha.local || campanha.endereco || "");
     const localEncontrado = locations.find(
       (local) =>
-        normalizar(local.nome) === localDaCampanha ||
-        normalizar(local.endereco) === localDaCampanha,
+        !!localDaCampanha &&
+        (normalizar(local.nome) === localDaCampanha ||
+          normalizar(local.endereco) === localDaCampanha),
     );
 
     return [
       {
         campanha,
-        endereco: campanha.endereco || localEncontrado?.endereco || campanha.local || "",
+        endereco:
+          campanha.endereco || localEncontrado?.endereco || campanha.local || `CEP ${campanha.cep}`,
         localDoMapa:
           localEncontrado ??
-          {
+          ({
             id: `campanha-${campanha.id}`,
             nome: campanha.titulo,
-            endereco: campanha.endereco || campanha.local || "",
+            endereco: campanha.endereco || campanha.local || `CEP ${campanha.cep}`,
             horario: campanha.horario || "",
             tipo: "fixo",
-            cidade: "Campina Grande",
-            estado: "PB",
+            cidade: campanha.cidade || "Campina Grande",
+            estado: campanha.estado || "PB",
+            ...(campanha.cep ? { cep: campanha.cep } : {}),
+            ...(campanha.positionPrecision
+              ? { positionPrecision: campanha.positionPrecision }
+              : {}),
             ...(campanha.latitude !== undefined ? { latitude: campanha.latitude } : {}),
             ...(campanha.longitude !== undefined ? { longitude: campanha.longitude } : {}),
             ...(campanha.positionApproximate !== undefined
               ? { positionApproximate: campanha.positionApproximate }
               : {}),
-          } satisfies CollectionLocation,
+          } satisfies CollectionLocation),
       },
     ];
   });

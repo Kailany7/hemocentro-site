@@ -1,7 +1,6 @@
 import { CalendarCheck2 } from "lucide-react";
-import type { DoadorExemplo } from "@/features/doador/data/exemplo";
 
-export function ProximaDoacao({ doador }: { doador: DoadorExemplo }) {
+export function OrientacaoIntervaloDoacao() {
   return (
     <section className="relative overflow-hidden rounded-2xl bg-primary p-6 text-primary-foreground shadow-brand sm:p-8">
       <div
@@ -15,14 +14,14 @@ export function ProximaDoacao({ doador }: { doador: DoadorExemplo }) {
       <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <span className="rounded-full bg-primary-foreground/15 px-3 py-1.5 text-xs font-bold">
-            Próxima doação possível
+            Intervalo entre doações
           </span>
-          <p className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
-            {doador.proximaDoacaoPossivel}
+          <p className="mt-4 text-2xl font-extrabold tracking-tight sm:text-3xl">
+            Homens: 60 dias · Mulheres: 90 dias
           </p>
           <p className="mt-2 max-w-md text-sm text-primary-foreground/80">
-            Sua última doação foi em {doador.ultimaDoacao}. Esse intervalo garante que você esteja
-            apto a doar com segurança.
+            Esse é o intervalo mínimo para doação de sangue total. A equipe do hemocentro confirma
+            sua aptidão na triagem.
           </p>
         </div>
 

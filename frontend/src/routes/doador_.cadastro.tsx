@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Droplets, IdCard, LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
+import { Droplets, LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,6 @@ import {
 import { cadastrarDoador } from "@/features/auth/doador-auth-service";
 import {
   apenasDigitos,
-  cpfValido,
-  formatarCpf,
   formatarTelefone,
   telefoneValido,
 } from "@/lib/formatadores";
@@ -38,7 +36,6 @@ function CadastroDoador() {
   const navigate = useNavigate();
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
-  const [cpf, setCpf] = useState("");
   const [telefone, setTelefone] = useState("");
   const [tipoSanguineo, setTipoSanguineo] = useState("");
   const [senha, setSenha] = useState("");
@@ -51,11 +48,6 @@ function CadastroDoador() {
 
     if (!tipoSanguineo) {
       toast.error("Selecione o seu tipo sanguíneo.");
-      return;
-    }
-
-    if (!cpfValido(cpf)) {
-      toast.error("CPF inválido.");
       return;
     }
 
@@ -79,7 +71,6 @@ function CadastroDoador() {
       await cadastrarDoador({
         nome: nome.trim(),
         email: email.trim(),
-        cpf: apenasDigitos(cpf),
         // O telefone é opcional: só envia quando preenchido.
         ...(telefone ? { telefone: apenasDigitos(telefone) } : {}),
         tipoSanguineo,
@@ -88,7 +79,7 @@ function CadastroDoador() {
       toast.success("Cadastro realizado! Faça login para continuar.");
       await navigate({ to: "/doador/login" });
     } catch (erro) {
-      // Mensagens da API (e-mail ou CPF já cadastrado, CPF inválido etc.) aparecem no toast.
+      // A mensagem da API, como e-mail já cadastrado, aparece no toast.
       toast.error(erro instanceof Error ? erro.message : "Não foi possível concluir o cadastro.");
     } finally {
       setEnviando(false);
@@ -152,40 +143,20 @@ function CadastroDoador() {
               </div>
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="cpf">CPF</Label>
-                <div className="relative">
-                  <IdCard className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="cpf"
-                    required
-                    inputMode="numeric"
-                    autoComplete="off"
-                    placeholder="000.000.000-00"
-                    maxLength={14}
-                    className="h-11 bg-background pl-9"
-                    value={cpf}
-                    onChange={(evento) => setCpf(formatarCpf(evento.target.value))}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="telefone">Telefone (opcional)</Label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="telefone"
-                    inputMode="numeric"
-                    autoComplete="tel"
-                    placeholder="(00) 00000-0000"
-                    maxLength={15}
-                    className="h-11 bg-background pl-9"
-                    value={telefone}
-                    onChange={(evento) => setTelefone(formatarTelefone(evento.target.value))}
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="telefone">Telefone (opcional)</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="telefone"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  placeholder="(00) 00000-0000"
+                  maxLength={15}
+                  className="h-11 bg-background pl-9"
+                  value={telefone}
+                  onChange={(evento) => setTelefone(formatarTelefone(evento.target.value))}
+                />
               </div>
             </div>
 
@@ -203,10 +174,6 @@ function CadastroDoador() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-xs text-muted-foreground">
-                Seu tipo sanguíneo ficará em verificação até a primeira doação, quando o hemocentro
-                confirma no exame.
-              </p>
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2">

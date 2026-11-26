@@ -25,6 +25,10 @@ export interface Campaign {
   latitude?: number;
   longitude?: number;
   positionApproximate?: boolean;
+  positionPrecision?: "cep" | "rua" | "bairro";
+  cep?: string;
+  cidade?: string;
+  estado?: string;
 }
 
 export interface CollectionLocation {
@@ -40,4 +44,6 @@ export interface CollectionLocation {
   cidade?: string;
   estado?: string;
   positionApproximate?: boolean;
+  positionPrecision?: "cep" | "rua" | "bairro";
+  cep?: string;
 }

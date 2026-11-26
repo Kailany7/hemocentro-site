@@ -12,7 +12,6 @@ const colecoes = Object.freeze([
   "Campanhas",
   "LocaisColeta",
   "UnidadesMoveis",
-  "GeocodingCache",
   "NotificacoesLog",
 ]);
 

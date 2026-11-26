@@ -1,16 +1,11 @@
-import { Clock3, MapPin, Navigation } from "lucide-react";
+import { Clock3, Copy, MapPin, Navigation } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Campaign, CollectionLocation } from "@/features/site/types/public-data";
 import { obterLocaisDasCampanhas } from "@/features/site/utils/locais-das-campanhas";
-
-function linkDoMapa(local: CollectionLocation) {
-  const endereco = [local.endereco, local.cidade, local.estado, "Brasil"]
-    .filter(Boolean)
-    .join(", ");
-
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(endereco)}`;
-}
+import { linkDoGoogleMaps } from "@/features/site/utils/google-maps";
+import { enderecoParaCopiar } from "@/features/site/utils/endereco-local";
 
 function nomeDoTipo(local: CollectionLocation) {
   return local.tipo === "movel" ? "Unidade móvel" : "Hemocentro";
@@ -52,9 +47,13 @@ export function LocaisColeta({ campanhas, locais, loading, erro }: LocaisColetaP
 
         {!loading &&
           locaisDasCampanhas.map(({ campanha, endereco, localDoMapa }) => (
-            <article
+            <a
               key={`campanha-${campanha.id}`}
-              className="rounded-xl border border-primary/30 bg-secondary/40 p-4"
+              href={linkDoGoogleMaps({ ...localDoMapa, endereco })}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${campanha.titulo}: abrir no Google Maps (nova aba)`}
+              className="block rounded-xl border border-primary/30 bg-secondary/40 p-4 hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
             >
               <div className="flex items-start gap-3">
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
@@ -75,26 +74,52 @@ export function LocaisColeta({ campanhas, locais, loading, erro }: LocaisColetaP
                 </div>
               </div>
 
-              <Button
-                asChild
-                variant="ghost"
-                size="sm"
-                className="mt-3 w-full justify-between rounded-xl bg-background text-primary"
-              >
-                <a href={linkDoMapa(localDoMapa)} target="_blank" rel="noreferrer">
-                  Como chegar
-                  <Navigation />
-                </a>
-              </Button>
-            </article>
+              <div className="mt-3 flex gap-2">
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                  className="min-w-0 flex-1 justify-between bg-background text-primary"
+                >
+                  <a
+                    href={linkDoGoogleMaps({ ...localDoMapa, endereco })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Google Maps <Navigation />
+                  </a>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="min-w-0 flex-1 px-2"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(
+                        enderecoParaCopiar({ ...localDoMapa, endereco }),
+                      );
+                      toast.success("Endere?o copiado.");
+                    } catch {
+                      toast.error("N?o foi poss?vel copiar o endere?o neste navegador.");
+                    }
+                  }}
+                >
+                  <Copy /> Copiar
+                </Button>
+              </div>
+            </a>
           ))}
 
         {!loading &&
           !erro &&
           locais.map((local) => (
-            <article
+            <a
               key={local.id}
-              className="rounded-xl border border-border bg-secondary/40 p-4"
+              href={linkDoGoogleMaps(local)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${local.nome}: abrir no Google Maps (nova aba)`}
+              className="block rounded-xl border border-border bg-secondary/40 p-4 hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
             >
               <div className="flex items-start gap-3">
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
@@ -105,8 +130,10 @@ export function LocaisColeta({ campanhas, locais, loading, erro }: LocaisColetaP
                   <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                     {nomeDoTipo(local)}
                   </p>
-                  {local.endereco && (
-                    <p className="mt-1 text-sm text-muted-foreground">{local.endereco}</p>
+                  {(local.endereco || local.cep) && (
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {local.endereco || `CEP ${local.cep}`}
+                    </p>
                   )}
                   {local.horario && (
                     <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-success">
@@ -117,18 +144,40 @@ export function LocaisColeta({ campanhas, locais, loading, erro }: LocaisColetaP
                 </div>
               </div>
 
-              <Button
-                asChild
-                variant="ghost"
-                size="sm"
-                className="mt-3 w-full justify-between rounded-xl bg-background text-primary"
-              >
-                <a href={linkDoMapa(local)} target="_blank" rel="noreferrer">
-                  Como chegar
-                  <Navigation />
-                </a>
-              </Button>
-            </article>
+              <div className="mt-3 flex gap-2">
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                  className="min-w-0 flex-1 justify-between bg-background text-primary"
+                >
+                  <a
+                    href={linkDoGoogleMaps({ ...localDoMapa, endereco })}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Google Maps <Navigation />
+                  </a>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="min-w-0 flex-1 px-2"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(
+                        enderecoParaCopiar({ ...localDoMapa, endereco }),
+                      );
+                      toast.success("Endere?o copiado.");
+                    } catch {
+                      toast.error("N?o foi poss?vel copiar o endere?o neste navegador.");
+                    }
+                  }}
+                >
+                  <Copy /> Copiar
+                </Button>
+              </div>
+            </a>
           ))}
       </CardContent>
     </Card>

@@ -36,7 +36,6 @@ export type DadosCadastro = {
   email: string;
   tipoSanguineo: string;
   senha: string;
-  cpf: string;
   telefone?: string;
 };
 

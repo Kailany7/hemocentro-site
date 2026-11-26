@@ -1,14 +1,28 @@
 import { ArrowRight, ChevronDown, Droplets, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function Hero() {
+interface HeroProps {
+  atualizadoEm?: string;
+}
+
+export function Hero({ atualizadoEm }: HeroProps) {
+  const dataAtualizacao = atualizadoEm
+    ? new Date(atualizadoEm).toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        timeZone: "America/Sao_Paulo",
+      })
+    : null;
+
   return (
     <section id="inicio" className="relative overflow-hidden">
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-20 pt-16 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:pb-28 lg:pt-24">
         {/* Coluna da esquerda: textos e botões */}
         <div className="hero-intro relative z-10 max-w-2xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-success-soft px-3.5 py-2 text-xs font-bold text-success">
-            <span className="size-2 rounded-full bg-success" /> Estoque atualizado hoje, às 8h
+            <span className="size-2 rounded-full bg-success" />
+            {dataAtualizacao ? `Estoque atualizado em ${dataAtualizacao}` : "Estoque atualizado"}
           </div>
 
           <h1 className="text-5xl font-extrabold leading-[1.04] tracking-[-0.055em] text-foreground sm:text-6xl lg:text-[4.5rem]">

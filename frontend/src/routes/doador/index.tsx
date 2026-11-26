@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useDoadorAuth } from "@/features/auth/use-doador-auth";
 import { CampanhasAtivas } from "@/features/doador/components/campanhas-ativas";
 import { LocaisColeta } from "@/features/doador/components/locais-coleta";
-import { ProximaDoacao } from "@/features/doador/components/proxima-doacao";
-import { doadorComDadosReais } from "@/features/doador/data/exemplo";
+import { OrientacaoIntervaloDoacao } from "@/features/doador/components/orientacao-intervalo-doacao";
 import { usePublicData } from "@/features/site/hooks/use-public-data";
 
 export const Route = createFileRoute("/doador/")({
@@ -18,8 +17,7 @@ export const Route = createFileRoute("/doador/")({
 
 function AreaDoador() {
   const { doador } = useDoadorAuth();
-  const dadosDoador = doadorComDadosReais(doador);
-  const primeiroNome = dadosDoador.nome.split(" ")[0] ?? dadosDoador.nome;
+  const primeiroNome = doador?.nome.trim().split(" ")[0] || "Doador";
   // Mesmas rotas publicas da landing, mas sem os dados fixos de exemplo.
   const { campanhas, locais, loading, erros } = usePublicData({ usarDadosFixos: false });
 
@@ -31,12 +29,11 @@ function AreaDoador() {
           Olá, {primeiroNome}
         </h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">
-          Acompanhe sua próxima doação, veja as campanhas ativas e encontre o ponto de coleta mais
-          perto de você.
+          Veja as campanhas ativas e encontre o ponto de coleta mais perto de você.
         </p>
       </div>
 
-      <ProximaDoacao doador={dadosDoador} />
+      <OrientacaoIntervaloDoacao />
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <CampanhasAtivas campanhas={campanhas} loading={loading} erro={erros.campanhas} />

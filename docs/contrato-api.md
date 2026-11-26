@@ -31,7 +31,6 @@ O painel `/gestao` **não faz parte deste repositório** e não é documentado a
 | `Campanhas`         | somente leitura            | gerencia                 |
 | `LocaisColeta`      | somente leitura            | gerencia                 |
 | `UnidadesMoveis`    | somente leitura            | gerencia                 |
-| `GeocodingCache`    | cria e atualiza (cache)    | —                        |
 
 Na primeira conexão o backend cria as coleções que ainda não existirem e garante os índices únicos
 parciais de `email` e `cpf` em `DoadoresCCadastro`. Nenhum dado existente é removido.
@@ -126,11 +125,9 @@ Campos:
 | `atualizadoEm`        | string ISO (opcional)   | `updatedAt` ou `createdAt`                                        |
 | `latitude`            | number (opcional)       | `latitude` ou `lat`                                               |
 | `longitude`           | number (opcional)       | `longitude`, `lng` ou `lon`                                       |
-| `positionApproximate` | boolean (opcional)      | `true` quando a posição veio da geocodificação                    |
 
-Se a campanha não tiver coordenadas, o backend geocodifica o `endereco` (usando `cidade`/`estado`
-do documento ou `Campina Grande`/`PB` por padrão) e acrescenta `latitude`, `longitude` e
-`positionApproximate: true`. Sem geocodificação, a campanha é devolvida sem coordenadas.
+Os cards usam endereço, CEP, cidade e estado para abrir uma busca no Google Maps.
+A API devolve as coordenadas já cadastradas, quando presentes, sem consultar serviços de geocodificação.
 
 Exemplo de resposta:
 
@@ -148,8 +145,7 @@ Exemplo de resposta:
       "status": "Ativa",
       "atualizadoEm": "2026-11-09T22:44:37.438Z",
       "latitude": -7.2331317,
-      "longitude": -35.8662144,
-      "positionApproximate": true
+      "longitude": -35.8662144
     }
   ]
 }
@@ -176,7 +172,6 @@ Campos:
 | `longitude`           | number (opcional)     | `longitude`/`lng`/`lon`                                             |
 | `cidade`              | string (opcional)     | `cidade`/`municipio`, inclusive dentro de `endereco`                 |
 | `estado`              | string (opcional)     | `estado`/`uf`                                                       |
-| `positionApproximate` | boolean (opcional)    | `true` quando a posição veio da geocodificação                      |
 
 Exemplo de resposta:
 
@@ -193,26 +188,22 @@ Exemplo de resposta:
       "latitude": -7.23836975,
       "longitude": -35.87332195,
       "cidade": "Campina Grande",
-      "estado": "PB",
-      "positionApproximate": true
+      "estado": "PB"
     }
   ]
 }
 ```
 
-### Geocodificação
+### Links para o Google Maps
 
-Os endereços sem coordenadas são resolvidos pelo Nominatim (OpenStreetMap):
+Locais e campanhas aceitam `cep`/`CEP` na raiz ou dentro de `endereco`, além do CEP
+incluído no texto do endereço. O frontend monta links com endereço, CEP, cidade,
+estado e Brasil. Quando não há endereço nem CEP, utiliza o nome do local.
+Campina Grande/PB é o padrão quando cidade e estado não estão cadastrados.
 
-- uma requisição por vez, com intervalo mínimo de ~1,1 s entre chamadas;
-- resultado (inclusive o negativo) guardado na coleção `GeocodingCache`;
-- cache negativo expira em 24 h;
-- a posição só é aceita quando rua, cidade e estado conferem; resultados de uma mesma rua só são
-  aproximados se estiverem a menos de 300 m entre si.
-
-Por isso, a primeira chamada a `/api/campanhas` ou `/api/locais` pode demorar: o backend está
-geocodificando. Se o Nominatim falhar ou não encontrar o endereço, o local continua na resposta,
-apenas sem `latitude`/`longitude`. O frontend sinaliza esses casos como "sem posição confirmada".
+Os cards abrem o Google Maps em outra aba. Não há mapa incorporado, consultas a
+provedores de CEP ou geocodificação durante a leitura dos dados públicos.
+Não é necessária chave de API.
 
 ---
 

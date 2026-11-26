@@ -33,7 +33,7 @@ Consequências práticas dessa divisão:
 - Vite 8
 - Tailwind CSS 4
 - Componentes Radix UI / shadcn/ui, `lucide-react` para ícones e `sonner` para avisos
-- Leaflet com tiles do OpenStreetMap para o mapa de locais de coleta
+- Cards de locais de coleta com links diretos para o Google Maps
 
 **Backend**
 
@@ -68,7 +68,6 @@ backend/
       public-data-router.js       Rotas públicas da landing
     services/
       doadorAuthService.js        Regras de cadastro, login, perfil e troca de senha
-      geocoding-service.js        Geocodificação de endereços com cache (GeocodingCache)
       public-data-service.js      Normaliza os documentos do MongoDB para a landing
   tests/
     features/                     Especificações Gherkin (landing, plataforma do doador e sistema privado)
@@ -80,7 +79,7 @@ frontend/
     features/
       auth/                       Sessão do doador: token no localStorage, provider e hook
       doador/                     Componentes da área do doador
-      site/                       Landing: seções, dados públicos, hooks, tipos e mapa Leaflet
+      site/                       Landing: seções, dados públicos, hooks, tipos e cards de locais
     hooks/                        Hooks compartilhados
     images/                       Imagens e ícones da aplicação
     lib/                          Utilitários, formatadores e páginas de erro
@@ -304,7 +303,7 @@ Regras principais:
 
 | Rota               | Tela              | O que faz                                                                                              |
 | ------------------ | ----------------- | ------------------------------------------------------------------------------------------------------ |
-| `/`                | Landing           | Hero, estoque de sangue, campanhas, locais de coleta com mapa Leaflet, critérios de doação e sobre. Os dados vêm de `/api/estoques`, `/api/campanhas` e `/api/locais`, com dados fixos de fallback. |
+| `/`                | Landing           | Hero, estoque de sangue, campanhas, cards de locais de coleta com links para o Google Maps, critérios de doação e sobre. Os dados vêm de `/api/estoques`, `/api/campanhas` e `/api/locais`, com dados fixos de fallback. |
 | `/doador/cadastro` | Criar conta       | Formulário de cadastro do doador (nome, e-mail, tipo sanguíneo, CPF, telefone e senha).                 |
 | `/doador/login`    | Entrar            | Login com e-mail e senha; guarda o token no `localStorage`.                                             |
 | `/doador`          | Área do doador    | Saudação, card "Próxima doação", campanhas ativas e locais de coleta. Exige login.                       |
