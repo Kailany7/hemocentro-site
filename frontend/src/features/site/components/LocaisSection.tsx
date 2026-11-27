@@ -101,7 +101,7 @@ export function LocaisSection({ campaigns, locations, loading }: LocaisSectionPr
                       }
                     }}
                   >
-                    <Copy /> Copiar
+                    <Copy /> Copiar Endereço
                   </Button>
                 </div>
               </div>
