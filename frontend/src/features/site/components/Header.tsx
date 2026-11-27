@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Droplets, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { ArrowRight, Droplets } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const LINKS = [
@@ -12,19 +11,17 @@ const LINKS = [
 ];
 
 export function Header() {
-  const [open, setOpen] = useState(false);
-
   return (
     <header className="sticky top-0 z-20 border-b border-border/70 bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-4 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-4 sm:gap-3 sm:px-5 lg:px-8">
         <a
           href="#inicio"
-          className="flex items-center gap-2.5 font-bold tracking-tight text-foreground"
+          className="flex shrink-0 items-center gap-2 font-bold tracking-tight text-foreground sm:gap-2.5"
         >
           <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-brand">
             <Droplets />
           </span>
-          <span className="text-xl">
+          <span className="text-lg sm:text-xl">
             Hemo<span className="text-primary">Help</span>
           </span>
         </a>
@@ -37,41 +34,15 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
-          <Button asChild className="hidden rounded-full px-5 shadow-brand sm:flex">
-            <Link to="/doador">
-              Área do doador <ArrowRight />
-            </Link>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setOpen(!open)}
-            aria-label="Abrir menu"
-          >
-            {open ? <X /> : <Menu />}
-          </Button>
-        </div>
+        <Button
+          asChild
+          className="shrink-0 rounded-full px-3 text-xs shadow-brand sm:px-5 sm:text-sm"
+        >
+          <Link to="/doador">
+            Área do doador <ArrowRight className="hidden sm:block" />
+          </Link>
+        </Button>
       </div>
-
-      {open && (
-        <nav className="flex flex-col gap-4 border-t border-border px-5 py-5 text-sm font-semibold lg:hidden">
-          {LINKS.map((link) => (
-            <a key={link.href} href={link.href} onClick={() => setOpen(false)}>
-              {link.label}
-            </a>
-          ))}
-
-          <div className="flex flex-col gap-2 border-t border-border pt-4">
-            <Button asChild className="rounded-full">
-              <Link to="/doador" onClick={() => setOpen(false)}>
-                Área do doador
-              </Link>
-            </Button>
-          </div>
-        </nav>
-      )}
     </header>
   );
 }
